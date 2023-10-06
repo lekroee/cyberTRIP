@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Incident App</title>
+    <style>
+        th {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            text-align: left;
+        }
+        td {
+            padding: 8px 20px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        input[type="text"] {
+            width: 1in;  /* Set input width to 1 inch */
+        }
+    </style>
+</head>
+<body>
+
+<!--API SECTION -->
+<div style="border: 1px solid black; padding: 10px; margin-bottom: 20px;">
+    <h2>URL Scan</h2>
+    <input type="text" id="url" placeholder="Enter URL">
+    <button id="urlscanButton">urlscan.io</button>
+    <pre id="urlscanResult" style="background-color: #f8f8f8; padding: 10px;">Results will appear here.</pre>
+    <div id="resultLinkContainer"></div>
+</div>
+
+<form action="/submit" method="post">
+    Incident Number: <input type="text" name="incident_number">
+
+<!--drop down menu-->
+    Severity: 
+    <select name="severity">
+    	<option value="emergency">Emergency</option>
+    	<option value="severe">Severe</option>
+    	<option value="high">High</option>
+        <option value="medium">Medium</option>
+    	<option value="low">Low</option>
+    </select>
+    Date: <input type="text" name="date">
+    Analyst Name: <input type="text" name="analyst_name">
+    Incident Type:
+    <select name="incident_type">
+        <option value="phish">Phish</option>
+        <option value="DDos">DDos</option>
+        <option value="Other Security">Other Security</option>
+    </select>
+    Email Address: <input type="text" name="email_address">
+    Subject Line: <input type="text" name="subject_line">
+    Emails Sent: <input type="text" name="emails_sent">
+    Replies: <input type="text" name="replies"><br>
+    Notes: <!-- The label for the notes textarea -->
+<br><textarea name="notes" style="width: 3in; height: 2in;"></textarea>
+<br> <!-- Move to the new line -->
+    <input type="submit" value="Submit">
+</form>
+
+<!--buttons-->
+<button onclick="location.href='/export-to-mongo'">Export Data to MongoDB</button>
+<button onclick="location.href='/load-from-mongo'">Load Data from MongoDB</button>
+<button onclick="location.href='/export-to-csv'">Export to CSV</button>
+<button onclick="location.href='/clear-data'">Clear Data</button>
+
+<!-- Display data here below everything. headings first-->
+<table id="data-display">
+    <tr>
+        <th>Incident Number</th>
+        <th>Severity</th>
+        <th>Date</th>
+        <th>Analyst Name</th>
+        <th>Incident Type</th>
+        <th>Email Address</th>
+        <th>Subject Line</th>
+        <th>Notes</th>
+        <th>Emails Sent</th>
+        <th>Replies</th>
+    </tr>
+    {% for item in data_list %}
+    <tr>
+        <td>{{ item.incident_number }}</td>
+	<td>{{ item.severity }}</td>
+        <td>{{ item.date }}</td>
+        <td>{{ item.analyst_name }}</td>
+        <td>{{ item.incident_type }}</td>
+        <td>{{ item.email_address }}</td>
+        <td>{{ item.subject_line }}</td>
+        <td>{{ item.notes }}</td>
+        <td>{{ item.emails_sent }}</td>
+        <td>{{ item.replies }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+
+<!--hello javascript section-->
+<script>
+//event listener setup for urlscan button click
+document.getElementById("urlscanButton").addEventListener("click", function() {
+    let url = document.getElementById("url").value;//url to post to urlscan.io
+    //This contacts the /urlscan app route to get the urlscan info
+    fetch(`/urlscan?url=${url}`)
+        .then(response => response.json())
+        .then(data => {
+// Convert the JSON data to a formatted string and display it inside an element with the id "urlscanResult"
+            document.getElementById("urlscanResult").innerText = JSON.stringify(data, null, 2);
+   
+     // If the returned JSON data has a "result" property, display a clickable link to view the scan result.    
+	if (data.result) {
+                let linkContainer = document.getElementById("resultLinkContainer");
+                linkContainer.innerHTML = `<a href="${data.result}" target="_blank">View Scan Result</a>`;
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            document.getElementById("urlscanResult").innerText = "Error fetching data!";
+        });
+});
+</script>
+
+</body>
+</html>

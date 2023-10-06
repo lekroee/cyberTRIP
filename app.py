@@ -13,7 +13,7 @@ collection = db["incidents"]#collection name
 
 data_list = []# for posting data to the bottom when submit button pressed
 
-API_KEY_URL = "d33fbeaf-3581-46dc-a70c-a42763abc5b7"  #This is the API key for URL scan
+API_KEY_URL = "key"  #This is the API key for URL scan
 
 @app.route("/")#for loading index, it displays any data in data list at the bottom when loaded
 def index():

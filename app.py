@@ -104,7 +104,7 @@ def create_user():
         username = request.form.get("username")
         password = bcrypt.generate_password_hash(request.form.get("password")).decode('utf-8')
         user_type = request.form.get("user_type")
-        users_collection.insert_one({"username": username, "password": password, "type": user_type})
+        users_collection.insert_one({"username": username, "password": password, "type": user_type})#type is superuser or normal. This affects visibility 
         return "User created", 200
 
     return render_template("create_user.html")
@@ -167,6 +167,8 @@ def export_to_mongo():
         collection.insert_many(data_list)
         #data_list.clear() maybe clear the screen - dunno if I want to do this
     return redirect(url_for('index'))#reload the screen for client
+
+
 #load data 
 @app.route("/load-from-mongo", methods=["GET"])
 def load_from_mongo():
@@ -176,6 +178,8 @@ def load_from_mongo():
     global data_list  
     data_list = list(collection.find({}, {'_id': 0}))#at the moment, this will get all the data in the collection and load it
     return redirect(url_for('index'))
+
+
 #When this button is pressed, get all the keys in a list structure and write to csv, then append data in each column
 @app.route("/export-to-csv", methods=["GET"])
 def export_to_csv():
@@ -190,6 +194,8 @@ def export_to_csv():
             dict_writer.writeheader()
         dict_writer.writerows(data_list)
     return "Data exported to CSV!", 200#I need error checking
+
+
 #this just clears the bottom of the screen data and reloads
 @app.route("/clear-data", methods=["GET"])
 def clear_data():
@@ -202,7 +208,9 @@ def clear_data():
 apis for external malware tools below
 
 '''
-#urlscan api - description is on their website
+
+
+#urlscan api - description is on their website - API KEY ISN'T READY YET. THIS WON'T WORK IF THERE IS NO API KEY
 @app.route("/urlscan", methods=["GET"])
 def urlscan():
     if "username" not in session:

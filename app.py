@@ -2,30 +2,151 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for
 from pymongo import MongoClient
 import csv
 import os
+from flask_bcrypt import Bcrypt
+from datetime import datetime
+from bson import json_util
+
+
+from flask import session# for login sessions
 
 
 app = Flask(__name__)
 
+app.secret_key = os.urandom(24)
+bcrypt = Bcrypt(app)#this is for encrypting login information with mongo
+
+
+#this is to get the database search working with serializable
+from flask import Flask, jsonify
+from bson import ObjectId
+import json  # Import the standard library's json
+
+class JSONEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, ObjectId):
+            return str(o)
+        return super().default(o)
+
+app.json_encoder = JSONEncoder
+
+
+
+
+
+
 # Setup MongoDB connection, this must obviously be running already on localhost for this implementation, but I can change later
 client = MongoClient("mongodb://localhost:27017/")
+
+
 db = client["incident_db"]#database name
+users_collection = db["users"]#for login info users
+# Check if admin exists in users collection
+admin_exists = users_collection.find_one({"username": "admin"})
+#if not, create one first time
+if not admin_exists:
+    hashed_password = bcrypt.generate_password_hash("admin").decode('utf-8')
+    users_collection.insert_one({"username": "admin", "password": hashed_password, "type": "superuser"})
+    
+
+
+
+
+
 collection = db["incidents"]#collection name
 
 data_list = []# for posting data to the bottom when submit button pressed
 
 API_KEY_URL = "key"  #This is the API key for URL scan
 
-@app.route("/")#for loading index, it displays any data in data list at the bottom when loaded
+# helps prevent XSS attacks ---***experimental this changes input***---
+def sanitize_input(text):
+    # Remove potentially harmful characters or sequences
+    return text.replace("<", "").replace(">", "").replace("&", "")
+
+
+
+#for login sessions
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+        
+        user = users_collection.find_one({"username": username})
+        
+        if user and bcrypt.check_password_hash(user["password"], password):
+            session["username"] = username
+            session["user_type"] = user["type"]
+            return redirect(url_for("index"))
+        else:
+            return "Invalid credentials", 401
+            
+    return render_template("login.html")
+
+@app.route("/logout", methods=["POST"])
+def logout():
+    save_data = request.form.get("save_data")  # This will come from the prompt
+    if save_data == "yes" and data_list:
+        collection.insert_many(data_list)
+        data_list.clear()
+
+    session.clear()  # Clear the session to log the user out
+    return redirect(url_for("login"))
+
+
+
+@app.route("/create-user", methods=["GET", "POST"])
+def create_user():
+    if session.get("user_type") != "superuser":
+        return "Access denied", 403
+
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = bcrypt.generate_password_hash(request.form.get("password")).decode('utf-8')
+        user_type = request.form.get("user_type")
+        users_collection.insert_one({"username": username, "password": password, "type": user_type})
+        return "User created", 200
+
+    return render_template("create_user.html")
+
+
+
+
+
+#for loading index, it displays any data in data list at the bottom when loaded
+
+@app.route("/")
 def index():
+    if "username" not in session:#check login info
+        return redirect(url_for("login"))
     return render_template("index.html", data_list=data_list)
+
+
+
 #submit button that will post (display at bottom) the incident data that was entered in all the text boxes
 @app.route("/submit", methods=["POST"])
-def submit_data():#call this python function to get the text box data
+def submit_data():
+    if "username" not in session:
+        return redirect(url_for("login"))#call this python function to get the text box data
+    
+    # Validate the date
+    date_str = request.form["date"]
+    try:
+        valid_date = datetime.strptime(date_str, '%m-%d-%Y')  # assuming format is MM-DD-YYYY
+    except ValueError:
+        return "Invalid date format. Expected MM-DD-YYYY.", 400
+    
+#sanitize
+    incident_number = sanitize_input(request.form["incident_number"])
+    analyst_name = sanitize_input(request.form["analyst_name"])
+ 
+
+
     data = {
-        "incident_number": request.form["incident_number"],
-	"severity": request.form["severity"],  # Adding severity
+        "incident_number": incident_number,
+	    "severity": request.form["severity"],  # Adding severity
         "date": request.form["date"],
-        "analyst_name": request.form["analyst_name"],
+        "analyst_name": analyst_name,
         "incident_type": request.form["incident_type"],
         "email_address": request.form["email_address"],
         "subject_line": request.form["subject_line"],
@@ -39,6 +160,9 @@ def submit_data():#call this python function to get the text box data
 #store data that's display on the bottom of the page in mongo database
 @app.route("/export-to-mongo", methods=["GET"])
 def export_to_mongo():
+    if "username" not in session:
+        return redirect(url_for("login"))
+
     if data_list:
         collection.insert_many(data_list)
         #data_list.clear() maybe clear the screen - dunno if I want to do this
@@ -46,12 +170,18 @@ def export_to_mongo():
 #load data 
 @app.route("/load-from-mongo", methods=["GET"])
 def load_from_mongo():
+    if "username" not in session:
+        return redirect(url_for("login"))
+
     global data_list  
     data_list = list(collection.find({}, {'_id': 0}))#at the moment, this will get all the data in the collection and load it
     return redirect(url_for('index'))
 #When this button is pressed, get all the keys in a list structure and write to csv, then append data in each column
 @app.route("/export-to-csv", methods=["GET"])
 def export_to_csv():
+    if "username" not in session:
+        return redirect(url_for("login"))
+
     keys = ["incident_number","severity", "date", "analyst_name", "incident_type", "email_address", "subject_line", "notes", "emails_sent", "replies"]
     mode = 'a' if os.path.exists("data.csv") else 'w'#if file is there append data, otherwise create a new file
     with open("data.csv", mode, newline='') as output_file:
@@ -63,6 +193,9 @@ def export_to_csv():
 #this just clears the bottom of the screen data and reloads
 @app.route("/clear-data", methods=["GET"])
 def clear_data():
+    if "username" not in session:
+        return redirect(url_for("login"))
+
     data_list.clear()
     return redirect(url_for('index'))
 '''
@@ -72,6 +205,9 @@ apis for external malware tools below
 #urlscan api - description is on their website
 @app.route("/urlscan", methods=["GET"])
 def urlscan():
+    if "username" not in session:
+        return redirect(url_for("login"))
+
     url = request.args.get('url')
     
     headers = {
@@ -90,6 +226,38 @@ def urlscan():
         return jsonify(response.json())#display json data
     else:
         return jsonify({"error": f"Error scanning URL! Response: {response.text}"}), 400
+
+
+
+@app.route("/search-database", methods=["POST"])
+def search_database():
+    query = request.form.get("query")
+
+    # Search all fields for the query
+    results = collection.find({
+        "$or": [
+            {"incident_number": {"$regex": query, "$options": "i"}},
+            {"severity": {"$regex": query, "$options": "i"}},
+            {"date": {"$regex": query, "$options": "i"}},
+            {"analyst_name": {"$regex": query, "$options": "i"}},
+            {"incident_type": {"$regex": query, "$options": "i"}},
+            {"email_address": {"$regex": query, "$options": "i"}},
+            {"subject_line": {"$regex": query, "$options": "i"}},
+            {"notes": {"$regex": query, "$options": "i"}},
+            {"emails_sent": {"$regex": query, "$options": "i"}},
+            {"replies": {"$regex": query, "$options": "i"}}
+        ]
+    })
+      
+    # Convert each MongoDB document to a dictionary that's JSON serializable
+    serialized_results = []
+    for result in results:
+        # Convert ObjectId to string
+        if '_id' in result:
+            result['_id'] = str(result['_id'])
+        serialized_results.append(result)
+
+    return jsonify(serialized_results)
 
 if __name__ == "__main__":
     app.run(debug=True)

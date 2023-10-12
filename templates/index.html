@@ -1,8 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
+		<meta charset="UTF-8">
     <title>Incident App</title>
-    <style>
+    <link rel="stylesheet" type="text/css" href="style.css">
+   
+    <!-- 
+<style>
         th {
             background-color: #4CAF50;
             color: white;
@@ -26,6 +30,7 @@
             width: 1in;  /* Set input width to 1 inch */
         }
     </style>
+ -->
 </head>
 <body>
 
@@ -133,7 +138,7 @@ document.getElementById("logoutButton").addEventListener("click", function() {
     {% endfor %}
 </table>
 
-<hr style="border-top: 5px solid black;">
+<!-- <hr style="border-top: 5px solid black;"> -->
 
 <!-- Search box and button -->
 <div style="margin-top: 20px;">
@@ -142,7 +147,7 @@ document.getElementById("logoutButton").addEventListener("click", function() {
 </div>
 
 <!-- Display search results here -->
-<div style="margin-top: 20px; border-top: 1px solid black;">
+<div <!-- style="margin-top: 20px; border-top: 1px solid black;" -->>
     <h3>Search Results:</h3>
     <table id="searchResults">
         <tr>

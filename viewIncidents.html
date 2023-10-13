@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Incidents</title>
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        th:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Incident Table</h2>
+
+<table id="incidentTable">
+    <thead>
+        <tr>
+            <th onclick="sortTable(0)">Incident Number</th>
+            <th onclick="sortTable(1)">Severity</th>
+            <th onclick="sortTable(2)">Date</th>
+            <th onclick="sortTable(3)">Analyst</th>
+            <th onclick="sortTable(4)">Incident Type</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>INC001</td>
+            <td>High</td>
+            <td>2023-10-15</td>
+            <td>John Doe</td>
+            <td>Phishing</td>
+        </tr>
+        <tr>
+            <td>INC002</td>
+            <td>Medium</td>
+            <td>2023-10-16</td>
+            <td>Jane Smith</td>
+            <td>DDoS</td>
+        </tr>
+        <!-- Add more rows as needed -->
+    </tbody>
+</table>
+
+<script>
+    function sortTable(columnIndex) {
+        const table = document.getElementById("incidentTable");
+        const rows = Array.from(table.rows).slice(1); // Exclude the header row
+
+        rows.sort((a, b) => {
+            const aValue = a.cells[columnIndex].textContent.trim();
+            const bValue = b.cells[columnIndex].textContent.trim();
+
+            return isNaN(aValue) ? aValue.localeCompare(bValue) : aValue - bValue;
+        });
+
+        // Clear the table body
+        const tbody = table.getElementsByTagName("tbody")[0];
+        tbody.innerHTML = "";
+
+        // Append sorted rows
+        rows.forEach(row => tbody.appendChild(row));
+    }
+</script>
+
+</body>
+</html>

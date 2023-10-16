@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-		<meta charset="UTF-8">
+	<meta charset="UTF-8">
     <title>Incident App</title>
     <link rel="stylesheet" type="text/css" href="../css/main.css">
    
@@ -44,34 +44,68 @@
 </div>
 
 <form action="/submit" method="post">
-    Incident Number: <input type="text" name="incident_number">
+        <div class="inputContainer">
+            <label for="incident_number">Incident Number:</label>
+            <input type="text" id="incident_number" name="incident_number">
+        </div>
 
-<!--drop down menu-->
-    Severity: 
-    <select name="severity">
-    	<option value="emergency">Emergency</option>
-    	<option value="severe">Severe</option>
-    	<option value="high">High</option>
-        <option value="medium">Medium</option>
-    	<option value="low">Low</option>
-    </select>
-    Date: <input type="text" name="date">
-    Analyst Name: <input type="text" name="analyst_name">
-    Incident Type:
-    <select name="incident_type">
-        <option value="phish">Phish</option>
-        <option value="DDos">DDos</option>
-        <option value="Other Security">Other Security</option>
-    </select>
-    Email Address: <input type="text" name="email_address">
-    Subject Line: <input type="text" name="subject_line">
-    Emails Sent: <input type="text" name="emails_sent">
-    Replies: <input type="text" name="replies"><br>
-    Notes: <!-- The label for the notes textarea -->
-<br><textarea name="notes" style="width: 3in; height: 2in;"></textarea>
-<br> <!-- Move to the new line -->
-    <input type="submit" value="Submit">
-</form>
+        <div class="inputContainer">
+            <label for="severity">Severity:</label>
+            <select id="severity" name="severity">
+                <option value="emergency">Emergency</option>
+                <option value="severe">Severe</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+            </select>
+        </div>
+
+        <div class="inputContainer">
+            <label for="date">Date:</label>
+            <input type="text" id="date" name="date">
+        </div>
+
+        <div class="inputContainer">
+            <label for="analyst_name">Analyst Name:</label>
+            <input type="text" id="analyst_name" name="analyst_name">
+        </div>
+
+        <div class="inputContainer">
+            <label for="incident_type">Incident Type:</label>
+            <select id="incident_type" name="incident_type">
+                <option value="phish">Phish</option>
+                <option value="DDos">DDos</option>
+                <option value="Other Security">Other Security</option>
+            </select>
+        </div>
+
+        <div class="inputContainer">
+            <label for="email_address">Email Address:</label>
+            <input type="text" id="email_address" name="email_address">
+        </div>
+
+        <div class="inputContainer">
+            <label for="subject_line">Subject Line:</label>
+            <input type="text" id="subject_line" name="subject_line">
+        </div>
+
+        <div class="inputContainer">
+            <label for="emails_sent">Emails Sent:</label>
+            <input type="text" id="emails_sent" name="emails_sent">
+        </div>
+
+        <div class="inputContainer">
+            <label for="replies">Replies:</label>
+            <input type="text" id="replies" name="replies">
+        </div>
+
+        <div class="inputContainer">
+            <label for="notes">Notes:</label>
+            <textarea id="notes" name="notes" style="width: 100%; height: 2in;"></textarea>
+        </div>
+
+        <input type="submit" value="Submit">
+    </form>
 
 <!--buttons-->
 <button onclick="location.href='/export-to-mongo'">Export Data to MongoDB</button>
@@ -147,7 +181,8 @@ document.getElementById("logoutButton").addEventListener("click", function() {
 </div>
 
 <!-- Display search results here -->
-<div <!-- style="margin-top: 20px; border-top: 1px solid black;" -->>
+<!-- style="margin-top: 20px; border-top: 1px solid black;"-->
+<div>
     <h3>Search Results:</h3>
     <table id="searchResults">
         <tr>

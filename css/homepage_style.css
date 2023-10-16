@@ -1,0 +1,97 @@
+body {
+    margin: 0px;
+    padding: 0px;
+}
+
+.header{
+    text-align: center;
+}
+
+h3 {
+    text-align: center;
+    padding: 30px;
+    margin-right:10vw;
+    margin-left:10vw;
+}
+
+#navigation_bar {
+    margin-top: 0px;
+    margin-bottom: 10vh;
+    background-color: rgb(97, 211, 242);
+    height: 22vh;
+    width: 100%;
+    font-family: 'Courier New', Courier, monospace;
+    border: 1px solid black;
+}
+
+#logo {
+    margin-top: 0px;
+    width: 50vw;
+    padding-left: 20px;
+    padding-top: 8vh;
+    font-size: 60px;
+    display: inline-block;
+}
+
+.links {
+    padding:20px;
+    font-size: 28px;
+    color: black;
+}
+
+a:hover {
+    color: white;
+}
+  
+a:active {
+    color: white;
+}
+
+#card_container {
+    margin-left:10vw;
+}
+
+.flip-card {
+    background-color: transparent;
+    padding: 20px;
+    width: 300px;
+    height: 200px;
+    perspective: 1000px;
+    display: inline-block;
+}
+  
+.flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+}
+  
+.flip-card:hover .flip-card-inner {
+    transform: rotateY(180deg);
+}
+  
+.flip-card-front, .flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden; /* Safari */
+    backface-visibility: hidden;
+}
+  
+.flip-card-front {
+    background-color: gray;
+    color: black;
+    box-shadow: 5px 5px 7px #666;
+    border-radius: 25px;
+}
+  
+.flip-card-back {
+    background-color: rgb(97, 211, 242);
+    color: white;
+    transform: rotateY(180deg);
+    box-shadow: 5px 5px 7px #666;
+    border-radius: 25px;
+}

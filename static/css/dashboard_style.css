@@ -1,0 +1,14 @@
+body {
+    margin: 0px;
+    padding: 0px;
+}
+
+#header {
+    margin-top: 0px;
+    margin-bottom: 10vh;
+    background-color: rgb(97, 211, 242);
+    height: 22vh;
+    width: 100%;
+    font-family: 'Courier New', Courier, monospace;
+    border: 1px solid black;
+}

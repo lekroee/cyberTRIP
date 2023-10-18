@@ -30,12 +30,9 @@ class JSONEncoder(json.JSONEncoder):
 app.json_encoder = JSONEncoder
 
 
-
-
-
-
 # Setup MongoDB connection, this must obviously be running already on localhost for this implementation, but I can change later
 client = MongoClient("mongodb://localhost:27017/")
+
 
 
 db = client["incident_db"]#database name
@@ -47,9 +44,6 @@ if not admin_exists:
     hashed_password = bcrypt.generate_password_hash("admin").decode('utf-8')
     users_collection.insert_one({"username": "admin", "password": hashed_password, "type": "superuser"})
     
-
-
-
 
 
 collection = db["incidents"]#collection name
@@ -97,8 +91,8 @@ def logout():
 
 @app.route("/create-user", methods=["GET", "POST"])
 def create_user():
-    if session.get("user_type") != "superuser":
-        return "Access denied", 403
+    # if session.get("user_type") != "superuser":
+        # return "Access denied", 403
 
     if request.method == "POST":
         username = request.form.get("username")
@@ -109,7 +103,9 @@ def create_user():
 
     return render_template("create_user.html")
 
-
+@app.route("/homepage", methods=["GET"])
+def homepage():
+    return render_template("homepage.html")
 
 
 
@@ -119,7 +115,7 @@ def create_user():
 def index():
     if "username" not in session:#check login info
         return redirect(url_for("login"))
-    return render_template("index.html", data_list=data_list)
+    return render_template("createIncident.html", data_list=data_list)
 
 
 

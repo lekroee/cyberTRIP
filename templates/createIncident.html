@@ -4,33 +4,6 @@
 	<meta charset="UTF-8">
     <title>Incident App</title>
     <link rel="stylesheet" type="text/css" href="../css/main.css">
-   
-    <!-- 
-<style>
-        th {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            text-align: left;
-        }
-        td {
-            padding: 8px 20px;
-        }
-        table {
-            border-collapse: collapse;
-            width: 100%;
-        }
-        table, th, td {
-            border: 1px solid #ddd;
-        }
-        tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
-        input[type="text"] {
-            width: 1in;  /* Set input width to 1 inch */
-        }
-    </style>
- -->
 </head>
 <body>
 
@@ -44,6 +17,7 @@
 </div>
 
 <form action="/submit" method="post">
+    <div id="formContainer">
         <div class="inputContainer">
             <label for="incident_number">Incident Number:</label>
             <input type="text" id="incident_number" name="incident_number">
@@ -52,11 +26,11 @@
         <div class="inputContainer">
             <label for="severity">Severity:</label>
             <select id="severity" name="severity">
-                <option value="emergency">Emergency</option>
-                <option value="severe">Severe</option>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
                 <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="severe">Severe</option>
+                <option value="emergency">Emergency</option>
             </select>
         </div>
 
@@ -101,11 +75,12 @@
 
         <div class="inputContainer">
             <label for="notes">Notes:</label>
-            <textarea id="notes" name="notes" style="width: 100%; height: 2in;"></textarea>
+            <textarea id="notes" name="notes"></textarea>
         </div>
 
         <input type="submit" value="Submit">
-    </form>
+    </div>
+</form>
 
 <!--buttons-->
 <button onclick="location.href='/export-to-mongo'">Export Data to MongoDB</button>
@@ -139,8 +114,6 @@ document.getElementById("logoutButton").addEventListener("click", function() {
     });
 });
 </script>
-
-
 
 <!-- Display data here below everything. headings first-->
 <table id="data-display">
@@ -211,7 +184,7 @@ document.getElementById("urlscanButton").addEventListener("click", function() {
     fetch(`/urlscan?url=${url}`)
         .then(response => response.json())
         .then(data => {
-// Convert the JSON data to a formatted string and display it inside an element with the id "urlscanResult"
+            // Convert the JSON data to a formatted string and display it inside an element with the id "urlscanResult"
             document.getElementById("urlscanResult").innerText = JSON.stringify(data, null, 2);
    
      // If the returned JSON data has a "result" property, display a clickable link to view the scan result.    
@@ -226,7 +199,7 @@ document.getElementById("urlscanButton").addEventListener("click", function() {
         });
 });
 
-<!--This is a script for the search button-->
+//This is a script for the search button
 document.getElementById("searchButton").addEventListener("click", function() {
     let query = document.getElementById("searchInput").value;
     fetch("/search-database", {
@@ -263,9 +236,6 @@ document.getElementById("searchButton").addEventListener("click", function() {
         });
     });
 });
-
-
-
 </script>
 
 </body>

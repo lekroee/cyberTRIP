@@ -3,161 +3,122 @@
 <head>
 	<meta charset="UTF-8">
     <title>Incident App</title>
-    <link rel="stylesheet" type="text/css" href="../css/main.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
 <body>
 
-<!--API SECTION -->
-<div style="border: 1px solid black; padding: 10px; margin-bottom: 20px;">
-    <h2>URL Scan</h2>
-    <input type="text" id="url" placeholder="Enter URL">
-    <button id="urlscanButton">urlscan.io</button>
-    <pre id="urlscanResult" style="background-color: #f8f8f8; padding: 10px;">Results will appear here.</pre>
-    <div id="resultLinkContainer"></div>
-</div>
+    <button id="back_button" onclick="location.href='/dashboard'">Back To Dashboard</button>
 
-<form action="/submit" method="post">
-    <div id="formContainer">
-        <div class="inputContainer">
-            <label for="incident_number">Incident Number:</label>
-            <input type="text" id="incident_number" name="incident_number">
-        </div>
-
-        <div class="inputContainer">
-            <label for="severity">Severity:</label>
-            <select id="severity" name="severity">
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="severe">Severe</option>
-                <option value="emergency">Emergency</option>
-            </select>
-        </div>
-
-        <div class="inputContainer">
-            <label for="date">Date:</label>
-            <input type="text" id="date" name="date">
-        </div>
-
-        <div class="inputContainer">
-            <label for="analyst_name">Analyst Name:</label>
-            <input type="text" id="analyst_name" name="analyst_name">
-        </div>
-
-        <div class="inputContainer">
-            <label for="incident_type">Incident Type:</label>
-            <select id="incident_type" name="incident_type">
-                <option value="phish">Phish</option>
-                <option value="DDos">DDos</option>
-                <option value="Other Security">Other Security</option>
-            </select>
-        </div>
-
-        <div class="inputContainer">
-            <label for="email_address">Email Address:</label>
-            <input type="text" id="email_address" name="email_address">
-        </div>
-
-        <div class="inputContainer">
-            <label for="subject_line">Subject Line:</label>
-            <input type="text" id="subject_line" name="subject_line">
-        </div>
-
-        <div class="inputContainer">
-            <label for="emails_sent">Emails Sent:</label>
-            <input type="text" id="emails_sent" name="emails_sent">
-        </div>
-
-        <div class="inputContainer">
-            <label for="replies">Replies:</label>
-            <input type="text" id="replies" name="replies">
-        </div>
-
-        <div class="inputContainer">
-            <label for="notes">Notes:</label>
-            <textarea id="notes" name="notes"></textarea>
-        </div>
-
-        <input type="submit" value="Submit">
+    <!--API SECTION -->
+    <div style="border: 1px solid black; padding: 10px; margin-bottom: 20px;">
+        <h2>URL Scan</h2>
+        <input type="text" id="url" placeholder="Enter URL">
+        <button id="urlscanButton">urlscan.io</button>
+        <pre id="urlscanResult" style="background-color: #f8f8f8; padding: 10px;">Results will appear here.</pre>
+        <div id="resultLinkContainer"></div>
     </div>
-</form>
 
-<!--buttons-->
-<button onclick="location.href='/export-to-mongo'">Export Data to MongoDB</button>
-<button onclick="location.href='/load-from-mongo'">Load Data from MongoDB</button>
-<button onclick="location.href='/export-to-csv'">Export to CSV</button>
-<button onclick="location.href='/clear-data'">Clear Data</button>
+    <form action="/submit" method="post">
+        <div id="formContainer">
+            <div class="inputContainer">
+                <label for="incident_number">Incident Number:</label>
+                <input type="text" id="incident_number" name="incident_number">
+            </div>
 
-<BR>
-<!-- Only show create user if current user is admin-->
-{% if session['user_type'] == 'superuser' %}
-<button onclick="location.href='/create-user'">Create New User</button>
-{% endif %}
+            <div class="inputContainer">
+                <label for="severity">Severity:</label>
+                <select id="severity" name="severity">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="severe">Severe</option>
+                    <option value="emergency">Emergency</option>
+                </select>
+            </div>
 
-<!-- Logout Button -->
-<button id="logoutButton">Logout</button>
+            <div class="inputContainer">
+                <label for="date">Date:</label>
+                <input type="text" id="date" name="date">
+            </div>
 
-<!-- Script for logout functionality -->
-<script>
-document.getElementById("logoutButton").addEventListener("click", function() {
-    let saveData = confirm("Would you like to save the current table data to the database?");
-    
-    fetch("/logout", {
-        method: "POST",
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `save_data=${saveData ? "yes" : "no"}`,  // Send user's choice to server
-    })
-    .then(() => {
-        window.location.href = "/login";  // Redirect to login page after logging out
+            <div class="inputContainer">
+                <label for="analyst_name">Analyst Name:</label>
+                <input type="text" id="analyst_name" name="analyst_name">
+            </div>
+
+            <div class="inputContainer">
+                <label for="incident_type">Incident Type:</label>
+                <select id="incident_type" name="incident_type">
+                    <option value="phish">Phish</option>
+                    <option value="DDos">DDos</option>
+                    <option value="Other Security">Other Security</option>
+                </select>
+            </div>
+
+            <div class="inputContainer">
+                <label for="email_address">Email Address:</label>
+                <input type="text" id="email_address" name="email_address">
+            </div>
+
+            <div class="inputContainer">
+                <label for="subject_line">Subject Line:</label>
+                <input type="text" id="subject_line" name="subject_line">
+            </div>
+
+            <div class="inputContainer">
+                <label for="emails_sent">Emails Sent:</label>
+                <input type="text" id="emails_sent" name="emails_sent">
+            </div>
+
+            <div class="inputContainer">
+                <label for="replies">Replies:</label>
+                <input type="text" id="replies" name="replies">
+            </div>
+
+            <div class="inputContainer">
+                <label for="notes">Notes:</label>
+                <textarea id="notes" name="notes"></textarea>
+            </div>
+
+            <input type="submit" value="Submit">
+        </div>
+    </form>
+
+    <!--buttons-->
+    <button onclick="location.href='/export-to-mongo'">Export Data to MongoDB</button>
+    <button onclick="location.href='/load-from-mongo'">Load Data from MongoDB</button>
+    <button onclick="location.href='/export-to-csv'">Export to CSV</button>
+    <button onclick="location.href='/clear-data'">Clear Data</button>
+
+    <BR>
+    <!-- Only show create user if current user is admin-->
+    {% if session['user_type'] == 'superuser' %}
+    <button onclick="location.href='/create-user'">Create New User</button>
+    {% endif %}
+
+    <!-- Logout Button -->
+    <button id="logoutButton">Logout</button>
+
+    <!-- Script for logout functionality -->
+    <script>
+    document.getElementById("logoutButton").addEventListener("click", function() {
+        let saveData = confirm("Would you like to save the current table data to the database?");
+        
+        fetch("/logout", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `save_data=${saveData ? "yes" : "no"}`,  // Send user's choice to server
+        })
+        .then(() => {
+            window.location.href = "/login";  // Redirect to login page after logging out
+        });
     });
-});
-</script>
+    </script>
 
-<!-- Display data here below everything. headings first-->
-<table id="data-display">
-    <tr>
-        <th>Incident Number</th>
-        <th>Severity</th>
-        <th>Date</th>
-        <th>Analyst Name</th>
-        <th>Incident Type</th>
-        <th>Email Address</th>
-        <th>Subject Line</th>
-        <th>Notes</th>
-        <th>Emails Sent</th>
-        <th>Replies</th>
-    </tr>
-    {% for item in data_list %}
-    <tr>
-        <td>{{ item.incident_number }}</td>
-	<td>{{ item.severity }}</td>
-        <td>{{ item.date }}</td>
-        <td>{{ item.analyst_name }}</td>
-        <td>{{ item.incident_type }}</td>
-        <td>{{ item.email_address }}</td>
-        <td>{{ item.subject_line }}</td>
-        <td>{{ item.notes }}</td>
-        <td>{{ item.emails_sent }}</td>
-        <td>{{ item.replies }}</td>
-    </tr>
-    {% endfor %}
-</table>
-
-<!-- <hr style="border-top: 5px solid black;"> -->
-
-<!-- Search box and button -->
-<div style="margin-top: 20px;">
-    <input type="text" id="searchInput" placeholder="Search Database">
-    <button id="searchButton">Search Database</button>
-</div>
-
-<!-- Display search results here -->
-<!-- style="margin-top: 20px; border-top: 1px solid black;"-->
-<div>
-    <h3>Search Results:</h3>
-    <table id="searchResults">
+    <!-- Display data here below everything. headings first-->
+    <table id="data-display">
         <tr>
             <th>Incident Number</th>
             <th>Severity</th>
@@ -170,73 +131,114 @@ document.getElementById("logoutButton").addEventListener("click", function() {
             <th>Emails Sent</th>
             <th>Replies</th>
         </tr>
-        <!-- Data rows will be populated here by JavaScript -->
+        {% for item in data_list %}
+        <tr>
+            <td>{{ item.incident_number }}</td>
+        <td>{{ item.severity }}</td>
+            <td>{{ item.date }}</td>
+            <td>{{ item.analyst_name }}</td>
+            <td>{{ item.incident_type }}</td>
+            <td>{{ item.email_address }}</td>
+            <td>{{ item.subject_line }}</td>
+            <td>{{ item.notes }}</td>
+            <td>{{ item.emails_sent }}</td>
+            <td>{{ item.replies }}</td>
+        </tr>
+        {% endfor %}
     </table>
-</div>
+
+    <!-- <hr style="border-top: 5px solid black;"> -->
+
+    <!-- Search box and button -->
+    <div style="margin-top: 20px;">
+        <input type="text" id="searchInput" placeholder="Search Database">
+        <button id="searchButton">Search Database</button>
+    </div>
+
+    <!-- Display search results here -->
+    <!-- style="margin-top: 20px; border-top: 1px solid black;"-->
+    <div>
+        <h3>Search Results:</h3>
+        <table id="searchResults">
+            <tr>
+                <th>Incident Number</th>
+                <th>Severity</th>
+                <th>Date</th>
+                <th>Analyst Name</th>
+                <th>Incident Type</th>
+                <th>Email Address</th>
+                <th>Subject Line</th>
+                <th>Notes</th>
+                <th>Emails Sent</th>
+                <th>Replies</th>
+            </tr>
+            <!-- Data rows will be populated here by JavaScript -->
+        </table>
+    </div>
 
 
-<!--hello javascript section , first part if for the urlscan api button and display-->
-<script>
-//event listener setup for urlscan button click
-document.getElementById("urlscanButton").addEventListener("click", function() {
-    let url = document.getElementById("url").value;//url to post to urlscan.io
-    //This contacts the /urlscan app route to get the urlscan info
-    fetch(`/urlscan?url=${url}`)
+    <!--hello javascript section , first part if for the urlscan api button and display-->
+    <script>
+    //event listener setup for urlscan button click
+    document.getElementById("urlscanButton").addEventListener("click", function() {
+        let url = document.getElementById("url").value;//url to post to urlscan.io
+        //This contacts the /urlscan app route to get the urlscan info
+        fetch(`/urlscan?url=${url}`)
+            .then(response => response.json())
+            .then(data => {
+                // Convert the JSON data to a formatted string and display it inside an element with the id "urlscanResult"
+                document.getElementById("urlscanResult").innerText = JSON.stringify(data, null, 2);
+    
+        // If the returned JSON data has a "result" property, display a clickable link to view the scan result.    
+        if (data.result) {
+                    let linkContainer = document.getElementById("resultLinkContainer");
+                    linkContainer.innerHTML = `<a href="${data.result}" target="_blank">View Scan Result</a>`;
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                document.getElementById("urlscanResult").innerText = "Error fetching data!";
+            });
+    });
+
+    //This is a script for the search button
+    document.getElementById("searchButton").addEventListener("click", function() {
+        let query = document.getElementById("searchInput").value;
+        fetch("/search-database", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `query=${query}`
+        })
         .then(response => response.json())
         .then(data => {
-            // Convert the JSON data to a formatted string and display it inside an element with the id "urlscanResult"
-            document.getElementById("urlscanResult").innerText = JSON.stringify(data, null, 2);
-   
-     // If the returned JSON data has a "result" property, display a clickable link to view the scan result.    
-	if (data.result) {
-                let linkContainer = document.getElementById("resultLinkContainer");
-                linkContainer.innerHTML = `<a href="${data.result}" target="_blank">View Scan Result</a>`;
-            }
-        })
-        .catch(error => {
-            console.error("Error:", error);
-            document.getElementById("urlscanResult").innerText = "Error fetching data!";
-        });
-});
+            let table = document.getElementById("searchResults");
+            
+            // Clear previous results but keep headers
+            let headers = table.rows[0].outerHTML; // store the header row
+            table.innerHTML = headers;  
 
-//This is a script for the search button
-document.getElementById("searchButton").addEventListener("click", function() {
-    let query = document.getElementById("searchInput").value;
-    fetch("/search-database", {
-        method: "POST",
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `query=${query}`
-    })
-    .then(response => response.json())
-    .then(data => {
-        let table = document.getElementById("searchResults");
-        
-        // Clear previous results but keep headers
-        let headers = table.rows[0].outerHTML; // store the header row
-        table.innerHTML = headers;  
-
-        // Populate data rows
-        data.forEach(item => {
-            table.innerHTML += `
-                <tr>
-                    <td>${item.incident_number}</td>
-                    <td>${item.severity}</td>
-                    <td>${item.date}</td>
-                    <td>${item.analyst_name}</td>
-                    <td>${item.incident_type}</td>
-                    <td>${item.email_address}</td>
-                    <td>${item.subject_line}</td>
-                    <td>${item.notes}</td>
-                    <td>${item.emails_sent}</td>
-                    <td>${item.replies}</td>
-                </tr>
-            `;
+            // Populate data rows
+            data.forEach(item => {
+                table.innerHTML += `
+                    <tr>
+                        <td>${item.incident_number}</td>
+                        <td>${item.severity}</td>
+                        <td>${item.date}</td>
+                        <td>${item.analyst_name}</td>
+                        <td>${item.incident_type}</td>
+                        <td>${item.email_address}</td>
+                        <td>${item.subject_line}</td>
+                        <td>${item.notes}</td>
+                        <td>${item.emails_sent}</td>
+                        <td>${item.replies}</td>
+                    </tr>
+                `;
+            });
         });
     });
-});
-</script>
+    </script>
 
 </body>
 </html>

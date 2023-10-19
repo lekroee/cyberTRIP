@@ -30,12 +30,9 @@ class JSONEncoder(json.JSONEncoder):
 app.json_encoder = JSONEncoder
 
 
-
-
-
-
 # Setup MongoDB connection, this must obviously be running already on localhost for this implementation, but I can change later
 client = MongoClient("mongodb://localhost:27017/")
+
 
 
 db = client["incident_db"]#database name
@@ -48,10 +45,6 @@ if not admin_exists:
     users_collection.insert_one({"username": "admin", "password": hashed_password, "type": "superuser"})
     
 
-
-
-
-
 collection = db["incidents"]#collection name
 
 data_list = []# for posting data to the bottom when submit button pressed
@@ -63,8 +56,7 @@ def sanitize_input(text):
     # Remove potentially harmful characters or sequences
     return text.replace("<", "").replace(">", "").replace("&", "")
 
-
-
+# EDITED Oct. 18th
 #for login sessions
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -77,11 +69,12 @@ def login():
         if user and bcrypt.check_password_hash(user["password"], password):
             session["username"] = username
             session["user_type"] = user["type"]
-            return redirect(url_for("index"))
+            return redirect(url_for("dashboard"))
         else:
             return "Invalid credentials", 401
             
     return render_template("login.html")
+
 
 @app.route("/logout", methods=["POST"])
 def logout():
@@ -97,30 +90,58 @@ def logout():
 
 @app.route("/create-user", methods=["GET", "POST"])
 def create_user():
-    if session.get("user_type") != "superuser":
-        return "Access denied", 403
+    # if session.get("user_type") != "superuser":
+        # return "Access denied", 403
 
     if request.method == "POST":
         username = request.form.get("username")
         password = bcrypt.generate_password_hash(request.form.get("password")).decode('utf-8')
         user_type = request.form.get("user_type")
         users_collection.insert_one({"username": username, "password": password, "type": user_type})#type is superuser or normal. This affects visibility 
-        return "User created", 200
+        print("User Created")
+        return render_template("login.html"), 200
 
+    print("Unable to create user")
     return render_template("create_user.html")
 
+# --------------------------- ADDED Oct. 18th ---------------------------
+# added to display homepage
+@app.route("/homepage", methods=["GET"])
+def homepage():
+    return render_template("homepage.html")
 
 
+# added to link to view incidents page
+@app.route("/view-incidents", methods=["GET"])
+def view_incidents():
+    return render_template("viewIncidents.html")
 
 
+# added to link to view statistics page
+@app.route("/view-stats", methods=["GET"])
+def view_stats():
+    return render_template("stats.html")
+
+
+# added to display homepage
+@app.route("/dashboard", methods=["GET"])
+def dashboard():
+    return render_template("dashboard.html")
+
+# ------------------------------------------------------------------------
+
+# EDITED Oct. 18th
 #for loading index, it displays any data in data list at the bottom when loaded
-
 @app.route("/")
+def start():
+    return render_template("homepage.html")
+
+# EDITED Oct. 18th
+@app.route("/index")
 def index():
     if "username" not in session:#check login info
         return redirect(url_for("login"))
-    return render_template("index.html", data_list=data_list)
-
+    return render_template("createIncident.html", data_list=data_list)
 
 
 #submit button that will post (display at bottom) the incident data that was entered in all the text boxes
@@ -136,11 +157,9 @@ def submit_data():
     except ValueError:
         return "Invalid date format. Expected MM-DD-YYYY.", 400
     
-#sanitize
+    #sanitize
     incident_number = sanitize_input(request.form["incident_number"])
     analyst_name = sanitize_input(request.form["analyst_name"])
- 
-
 
     data = {
         "incident_number": incident_number,
@@ -156,6 +175,7 @@ def submit_data():
     }
     data_list.append(data)
     return redirect(url_for('index'))#basically reload the page on client so they see updated submitted data
+
 
 #store data that's display on the bottom of the page in mongo database
 @app.route("/export-to-mongo", methods=["GET"])

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home Page</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/homepage_style.css') }}">
+</head>
+<body>
+
+    <div id="navigation_bar">
+        <h1 id="logo"> CyberTRIP </h1>
+        <a class="links" href="{{ url_for('homepage', filename='templates/homepage.html') }}">About</a>
+        <a class="links" href="{{ url_for('login', filename='templates/login.html') }}">Login</a>
+        <a class="links" href="{{ url_for('create_user', filename='templates/create_user.html') }}">Sign Up</a>
+    </div>
+
+    
+    <div id="about_container">
+
+        <img id="background_img" src="{{ url_for('static', filename='css/background.webp') }}" alt="background_img">
+        <div id="content">
+            <h1 class="header"> Welcome to CyberTRIP: Cyber Triage & Response Incident Platform </h1>
+            <h3> 
+                CyberTRIP is a comprehensive web-based tool designed to track, manage, and prioritize 
+                cyber security incidents in real-time. Integrated with leading external 
+                cybersecurity APIs, CyberTRIP provides an all-in-one solution to swiftly 
+                respond to threats, ensuring digital assets remain secure.
+            </h3>
+        </div>
+    </div>
+
+    <h1 class="header"> Services </h1>
+
+    <div id="card_container"> 
+
+        <div class="flip-card">
+            <div class="flip-card-inner">
+            <div class="flip-card-front">
+                <h1> Report and Respond to Incidents </h1>
+            </div>
+            <div class="flip-card-back">
+                <p>
+                    CyberTRIP provides functionality to add and save 
+                    incidents by name, type, location, etc., and store them in 
+                    a searchable database to be able to search and generate 
+                    statistics. All data can be exported to csv or similar 
+                    formats of your choosing for intuitive data sharing.
+                </p>
+            </div>
+            </div>
+        </div>
+
+        <div class="flip-card">
+            <div class="flip-card-inner">
+            <div class="flip-card-front">
+                <h1> Cybersecurity Tools </h1>
+            </div>
+            <div class="flip-card-back">
+                <p>
+                    CyberTRIP provides tools associated with different types of 
+                    incident response such as ... that are accessible from your 
+                    user dashboard.
+                </p>
+            </div>
+            </div>
+        </div>
+
+        <div class="flip-card">
+            <div class="flip-card-inner">
+            <div class="flip-card-front">
+                <h1> Analytics </h1>
+            </div>
+            <div class="flip-card-back">
+                <p>
+                    CyberTRIP provides functionality to generate and display
+                    statistics from incident report and response data.
+                </p>
+            </div>
+            </div>
+        </div>
+
+    </div>
+    
+</body>
+</html>

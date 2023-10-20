@@ -6,6 +6,19 @@
 </head>
 <body>
 
+	<!-- Display Flask flashed messages - This would be a warning about a wrong passkey -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class="flashed-messages">
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+
+
     <div id="navigation_bar">
         <h1 id="logo"> CyberTRIP </h1>
         <a class="links" href="{{ url_for('homepage', filename='templates/homepage.html') }}">About</a>
@@ -24,6 +37,12 @@
         <div>
             <input class="items" id="button" type="submit" value="Create User">
         </div>
+
+<!-- This should verify that it's us creating a new account -->
+ 	 <div class="form-group">
+                <label for="passkey">Passkey:</label>
+                <input type="text" id="passkey" name="passkey" required>
+          </div>
     </form>
 
 </body>

@@ -5,15 +5,29 @@ import os
 from flask_bcrypt import Bcrypt
 from datetime import datetime
 from bson import json_util
-
-
+from flask import flash
+from datetime import datetime, timedelta
+import hashlib
+import requests
 from flask import session# for login sessions
 
 
 app = Flask(__name__)
 
+
 app.secret_key = os.urandom(24)
+
+# Session security settings, this keeps info in cookies safe
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['WTF_CSRF_ENABLED'] = True
+
+
 bcrypt = Bcrypt(app)#this is for encrypting login information with mongo
+
+# This global variable stores the timestamp of the last failed attempt and the number of failed attempts in the create user route.
+cooldown_info = {"last_attempt": None, "failed_attempts": 0}
+
 
 
 #this is to get the database search working with serializable
@@ -93,10 +107,43 @@ def create_user():
     # if session.get("user_type") != "superuser":
         # return "Access denied", 403
 
+    # This is for the wait time if a user tries to enter the wrong passkey too many times.
+    global cooldown_info
+    current_time = datetime.now()
+
+        # Check if the user is in cooldown period
+    if cooldown_info["last_attempt"] and (current_time - cooldown_info["last_attempt"]) < timedelta(minutes=10):
+        flash("Too many incorrect attempts. Please try again later.")
+        return redirect(url_for("homepage"))
+
+
     if request.method == "POST":
         username = request.form.get("username")
         password = bcrypt.generate_password_hash(request.form.get("password")).decode('utf-8')
         user_type = request.form.get("user_type")
+        
+        #Chris added the passkey verification here
+        entered_passkey = request.form.get("passkey")
+        # salt to add to encrypted key
+        salt = "ravisethi"
+        correct_passkey_hash = hashlib.sha256(("team7csc436!!!" + salt).encode()).hexdigest()
+        
+        entered_passkey_hash = hashlib.sha256((entered_passkey + salt).encode()).hexdigest()
+
+        if entered_passkey_hash != correct_passkey_hash:
+            cooldown_info["failed_attempts"] += 1
+            if cooldown_info["failed_attempts"] >= 10:
+                cooldown_info["last_attempt"] = current_time
+                flash("Too many incorrect attempts. Please try again later.")
+                return redirect(url_for("homepage"))
+            else:
+                flash("Incorrect passkey. Please try again.")
+                return redirect(url_for("create_user"))
+
+        # Reset failed attempts on successful passkey entry
+        cooldown_info["failed_attempts"] = 0
+        #end new passkeycode
+
         users_collection.insert_one({"username": username, "password": password, "type": user_type})#type is superuser or normal. This affects visibility 
         print("User Created")
         return render_template("login.html"), 200

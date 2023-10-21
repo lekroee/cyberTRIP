@@ -25,7 +25,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 
-app.secret_key = os.urandom(24)
+
 
 # Session security settings, this keeps info in cookies safe
 app.config['SESSION_COOKIE_SECURE'] = False  # For development only
@@ -95,6 +95,7 @@ def login():
             session.permanent = True  # The session will last beyond a single browser session
             session["username"] = username
             session["user_type"] = user["type"]
+            print('Session data at /login:', session.items())
             return redirect(url_for("dashboard"))
         else:
             # Handle incorrect login credentials
@@ -353,4 +354,5 @@ def search_database():
     return jsonify(serialized_results)
 
 if __name__ == "__main__":
+    app.secret_key = "this is the session key"
     app.run(debug=True)

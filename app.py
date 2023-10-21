@@ -183,16 +183,14 @@ def dashboard():
 # EDITED Oct. 18th
 #for loading index, it displays any data in data list at the bottom when loaded
 @app.route("/")
-def index():
-    # Now we're inside a request, so it's safe to access 'session'
-    logging.debug('Session data: %s', session.items())
-    return "Hello, World!"
+
 def start():
     return render_template("homepage.html")
 
 # EDITED Oct. 18th
 @app.route("/index")
 def index():
+    logging.debug('Session data: %s', session.items())
     if "username" not in session:#check login info
         return redirect(url_for("login"))
     return render_template("createIncident.html", data_list=data_list)

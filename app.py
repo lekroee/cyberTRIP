@@ -172,7 +172,7 @@ def create_user():
 def homepage():
     return render_template("homepage.html")
 
-@app.route("create-incident", methods=["GET"])
+@app.route("/create-incident", methods=["GET"])
 def create_incident():
     return render_template("createIncident.html")
 

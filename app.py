@@ -23,7 +23,7 @@ from datetime import timedelta
 app = Flask(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
-app.secret_key = os.urandom(24)
+app.config['SECRET_KEY'] = 'your_secret_key'
 
 
 

@@ -23,12 +23,7 @@ app = Flask(__name__)
 
 app.secret_key = os.urandom(24)
 
-# Session security settings, this keeps info in cookies safe
-app.config['SESSION_COOKIE_SECURE'] = False  # For development only
-app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['WTF_CSRF_ENABLED'] = True
-# Set the duration for the session data to be stored
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=1)  # Sessions last for 1 day
+
 
 bcrypt = Bcrypt(app)#this is for encrypting login information with mongo
 

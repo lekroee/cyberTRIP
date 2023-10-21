@@ -354,5 +354,5 @@ def search_database():
     return jsonify(serialized_results)
 
 if __name__ == "__main__":
-    app.secret_key = "this is the session key"
+    app.secret_key = os.urandom(24)
     app.run(debug=True)

@@ -10,6 +10,9 @@ from datetime import datetime, timedelta
 import hashlib
 import requests
 from flask import session# for login sessions
+import logging
+logging.basicConfig(level=logging.DEBUG)
+logging.debug('Session data: %s', session.items())
 
 
 app = Flask(__name__)
@@ -18,7 +21,7 @@ app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
 # Session security settings, this keeps info in cookies safe
-app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_SECURE'] = False  # For development only
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['WTF_CSRF_ENABLED'] = True
 

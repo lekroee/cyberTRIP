@@ -22,11 +22,7 @@ from datetime import timedelta
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.DEBUG)
-app.config['SESSION_COOKIE_SECURE'] = False
-app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['WTF_CSRF_ENABLED'] = True
 
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=1)  # For example, 1 day
 
 
 app.secret_key = os.urandom(24)
@@ -206,6 +202,8 @@ def start():
 @app.route("/index")
 def index():
     logging.debug('Session data: %s', session.items())
+    print('Session data at /index:', session.items())  # Print directly to the console
+    
     if "username" not in session:#check login info
         return redirect(url_for("login"))
     return render_template("createIncident.html", data_list=data_list)

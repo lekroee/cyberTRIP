@@ -12,7 +12,7 @@ import requests
 from flask import session# for login sessions
 import logging
 logging.basicConfig(level=logging.DEBUG)
-logging.debug('Session data: %s', session.items())
+
 
 
 app = Flask(__name__)
@@ -183,6 +183,10 @@ def dashboard():
 # EDITED Oct. 18th
 #for loading index, it displays any data in data list at the bottom when loaded
 @app.route("/")
+def index():
+    # Now we're inside a request, so it's safe to access 'session'
+    logging.debug('Session data: %s', session.items())
+    return "Hello, World!"
 def start():
     return render_template("homepage.html")
 

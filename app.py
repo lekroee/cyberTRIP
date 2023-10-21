@@ -14,16 +14,29 @@ import logging
 from flask import Flask
 from datetime import timedelta
 
-logging.basicConfig(level=logging.DEBUG)
+
+
+
 
 
 
 app = Flask(__name__)
+logging.basicConfig(level=logging.DEBUG)
+app.config['SESSION_COOKIE_SECURE'] = False
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['WTF_CSRF_ENABLED'] = True
+
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=1)  # For example, 1 day
 
 
 app.secret_key = os.urandom(24)
 
-
+# Session security settings, this keeps info in cookies safe
+app.config['SESSION_COOKIE_SECURE'] = False  # For development only
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['WTF_CSRF_ENABLED'] = True
+# Set the duration for the session data to be stored
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=1)  # Sessions last for 1 day
 
 bcrypt = Bcrypt(app)#this is for encrypting login information with mongo
 
@@ -83,10 +96,13 @@ def login():
         user = users_collection.find_one({"username": username})
         
         if user and bcrypt.check_password_hash(user["password"], password):
+            session.permanent = True  # The session will last beyond a single browser session
             session["username"] = username
             session["user_type"] = user["type"]
             return redirect(url_for("dashboard"))
         else:
+            # Handle incorrect login credentials
+            flash("Invalid credentials")
             return "Invalid credentials", 401
             
     return render_template("login.html")

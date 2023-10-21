@@ -174,6 +174,7 @@ def homepage():
 
 @app.route("/create-incident", methods=["GET"])
 def create_incident():
+    print('Session data at /login:', session.items())
     return render_template("createIncident.html")
 
 
@@ -217,6 +218,7 @@ def index():
 #submit button that will post (display at bottom) the incident data that was entered in all the text boxes
 @app.route("/submit", methods=["POST"])
 def submit_data():
+    print('Session data at /login:', session.items())
     if "username" not in session:
         return redirect(url_for("login"))#call this python function to get the text box data
     

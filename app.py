@@ -40,6 +40,21 @@ bcrypt = Bcrypt(app)#this is for encrypting login information with mongo
 # This global variable stores the timestamp of the last failed attempt and the number of failed attempts in the create user route.
 cooldown_info = {"last_attempt": None, "failed_attempts": 0}
 
+#I'm having trouble getting this to work correctly, until then, I'm using the json to store the api key
+def get_environment_variable(key):
+    try:
+        # Try to read the environment variable
+        value = os.environ[key]
+    except KeyError:
+        # The environment variable was not found
+        print(f"Error: The environment variable {key} was not set.")
+        # Handle the error (e.g., you could exit with an error message, or you could return a default value)
+        # Here, we're exiting the program. You might want to do something different.
+        exit(1)  # Exit with a status code indicating an error occurred.
+    else:
+        return value
+
+
 
 
 #this is to get the database search working with serializable
@@ -340,6 +355,7 @@ def urlscan():
         return redirect(url_for("login"))
 
     url = request.args.get('url')
+   
     
     # Load the configuration file
     try:

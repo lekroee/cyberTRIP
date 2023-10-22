@@ -147,7 +147,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // This function handles clicks on URL links in your table.
+    // This function handles clicks on URL links in the table.
     function handleUrlClick(e) {
         e.preventDefault();  // Stop the browser from following the link
 
@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // as opposed to 'target' which indicates the element that was actually clicked
         const url = e.currentTarget.getAttribute('data-url'); 
 
-        // Continue with your existing fetch logic using the extracted URL
+       
         fetch(`/urlscan?url=${url}`)
             .then(response => response.json())
             .then(data => {
@@ -200,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function() {
             {% endfor %}
 
 	{% else %}
-            <!-- If there's no URL, you can display a default text or leave it empty -->
+            <!-- If there's no URL, display a default text or leave it empty -->
             N/A
         {% endif %}
     </td>
@@ -276,7 +276,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 row.insertCell(0).innerHTML = '<input type="checkbox" class="recordCheckbox">'; // for the checkbox
 
-                // Explicitly set each cell's content to match the correct property from your data
+                // Explicitly set each cell's content to match the correct property from the data
                 row.insertCell(1).textContent = item.incident_number || ''; // || '' ensures that if the value is undefined, it defaults to an empty string
                 row.insertCell(2).textContent = item.severity || '';
                 row.insertCell(3).textContent = item.date || '';
@@ -321,11 +321,11 @@ window.addEventListener('DOMContentLoaded', (event) => {
 
             // Check if the response is successful
             if (response.ok) {		
-		// First, check the response text to understand what you're receiving
+		// First, check the response text to understand what is being received
             	const responseText = await response.text();
             	console.log('Server response:', responseText);	
 
-                // Then, if you're sure it's JSON, you can parse it
+                // Then, if we're sure it's JSON, we can parse it
             	const data = JSON.parse(responseText);
 
                 // Get the table where the data will be displayed
@@ -503,7 +503,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // This function handles clicks on URL links in your table.
+    // This function handles clicks on URL links in the table.
     function handleUrlClick(e) {
         e.preventDefault();  // Stop the browser from following the link
 
@@ -511,7 +511,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // as opposed to 'target' which indicates the element that was actually clicked
         const url = e.currentTarget.getAttribute('data-url'); 
 
-        // Continue with your existing fetch logic using the extracted URL
+        // Continue with the existing fetch logic using the extracted URL
         fetch(`/urlscan?url=${url}`)
             .then(response => response.json())
             .then(data => {

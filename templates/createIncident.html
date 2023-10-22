@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<meta charset="UTF-8">
     <title>Incident App</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}">
@@ -75,6 +76,11 @@
                 <input type="text" id="replies" name="replies">
             </div>
 
+	    <div class="inputContainer">
+    		<label for="urls">Urls:</label>
+    	    	<input type="text" id="urls" name="urls">
+	    </div>
+
             <div class="inputContainer">
                 <label for="notes">Notes:</label>
                 <textarea id="notes" name="notes"></textarea>
@@ -85,7 +91,8 @@
     </form>
 
     <!--buttons-->
-    <button onclick="location.href='/export-to-mongo'">Export Data to MongoDB</button>
+    <input type="text" id="newSearchInput" placeholder="Enter search query">
+    <button id="newSearchButton">Search Database</button>
     <button onclick="location.href='/load-from-mongo'">Load Data from MongoDB</button>
     <button onclick="location.href='/export-to-csv'">Export to CSV</button>
     <button onclick="location.href='/clear-data'">Clear Data</button>
@@ -117,9 +124,13 @@
     });
     </script>
 
+	<button type="button" id="deleteRecordButton">Delete Selected Records</button>
+
+
     <!-- Display data here below everything. headings first-->
     <table id="data-display">
         <tr>
+	    <th>Select</th>
             <th>Incident Number</th>
             <th>Severity</th>
             <th>Date</th>
@@ -127,54 +138,91 @@
             <th>Incident Type</th>
             <th>Email Address</th>
             <th>Subject Line</th>
+	    <th>Urls</th>
             <th>Notes</th>
             <th>Emails Sent</th>
             <th>Replies</th>
         </tr>
-        {% for item in data_list %}
-        <tr>
-            <td>{{ item.incident_number }}</td>
-        <td>{{ item.severity }}</td>
-            <td>{{ item.date }}</td>
-            <td>{{ item.analyst_name }}</td>
-            <td>{{ item.incident_type }}</td>
-            <td>{{ item.email_address }}</td>
-            <td>{{ item.subject_line }}</td>
-            <td>{{ item.notes }}</td>
-            <td>{{ item.emails_sent }}</td>
-            <td>{{ item.replies }}</td>
-        </tr>
-        {% endfor %}
+        
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // This function handles clicks on URL links in your table.
+    function handleUrlClick(e) {
+        e.preventDefault();  // Stop the browser from following the link
+
+        // 'currentTarget' refers to the element to which the event listener is attached
+        // as opposed to 'target' which indicates the element that was actually clicked
+        const url = e.currentTarget.getAttribute('data-url'); 
+
+        // Continue with your existing fetch logic using the extracted URL
+        fetch(`/urlscan?url=${url}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("urlscanResult").innerText = JSON.stringify(data, null, 2);
+                if (data.result) {
+                    let linkContainer = document.getElementById("resultLinkContainer");
+                    linkContainer.innerHTML = `<a href="${data.result}" target="_blank">View Scan Result</a>`;
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                document.getElementById("urlscanResult").innerText = "Error fetching data!";
+            });
+    }
+
+    // Attach the above function as an event listener to each link in the 'URLs' column
+    document.querySelectorAll('.url-link').forEach(linkElement => {
+        linkElement.addEventListener('click', handleUrlClick);
+    });
+});
+</script>
+
+
+
+
+{% for item in data_list %}
+<tr data-id="{{ item._id }}">
+    <td><input type="checkbox" id="recordCheckbox-{{ item._id }}" name="recordSelection" class="recordCheckbox"></td>
+    <td>{{ item.incident_number }}</td>
+    <td>{{ item.severity }}</td>
+    <td>{{ item.date }}</td>
+    <td>{{ item.analyst_name }}</td>
+    <td>{{ item.incident_type }}</td>
+    <td>{{ item.email_address }}</td>
+    <td>{{ item.subject_line }}</td>
+    <td>
+        {% if item.urls %}
+            <!-- Split the URLs string by comma and create a link for each URL -->
+            {% set urls_list = item.urls.split(',') %}
+            {% for url in urls_list %}
+                <a href="#" class="url-link" data-url="{{ url.strip() }}" style="display: block;">{{ url.strip() }}</a>
+            {% endfor %}
+
+	{% else %}
+            <!-- If there's no URL, you can display a default text or leave it empty -->
+            N/A
+        {% endif %}
+    </td>
+    <td class="notes">{{ item.notes|safe }}</td>
+    <td>{{ item.emails_sent }}</td>
+    <td>{{ item.replies }}</td>
+</tr>
+{% endfor %}
+
+
+	
+    
+    
+
+
+       
+            
     </table>
 
     <!-- <hr style="border-top: 5px solid black;"> -->
 
-    <!-- Search box and button -->
-    <div style="margin-top: 20px;">
-        <input type="text" id="searchInput" placeholder="Search Database">
-        <button id="searchButton">Search Database</button>
-    </div>
-
-    <!-- Display search results here -->
-    <!-- style="margin-top: 20px; border-top: 1px solid black;"-->
-    <div>
-        <h3>Search Results:</h3>
-        <table id="searchResults">
-            <tr>
-                <th>Incident Number</th>
-                <th>Severity</th>
-                <th>Date</th>
-                <th>Analyst Name</th>
-                <th>Incident Type</th>
-                <th>Email Address</th>
-                <th>Subject Line</th>
-                <th>Notes</th>
-                <th>Emails Sent</th>
-                <th>Replies</th>
-            </tr>
-            <!-- Data rows will be populated here by JavaScript -->
-        </table>
-    </div>
+    
 
 
     <!--hello javascript section , first part if for the urlscan api button and display-->
@@ -200,45 +248,293 @@
                 document.getElementById("urlscanResult").innerText = "Error fetching data!";
             });
     });
+</script>
+    <script>
+        document.getElementById("newSearchButton").addEventListener("click", function() {
+            var query = document.getElementById("newSearchInput").value;
 
-    //This is a script for the search button
-    document.getElementById("searchButton").addEventListener("click", function() {
-        let query = document.getElementById("searchInput").value;
-        fetch("/search-database", {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `query=${query}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            let table = document.getElementById("searchResults");
-            
-            // Clear previous results but keep headers
-            let headers = table.rows[0].outerHTML; // store the header row
-            table.innerHTML = headers;  
+            fetch("/search-database", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `query=${query}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Get the main data-display table and clear it
+                let table = document.getElementById("data-display");
+                while (table.rows.length > 1) {  // Keep the header row
+                    table.deleteRow(1);
+                }
 
-            // Populate data rows
+                // Populate data rows for the search results
             data.forEach(item => {
-                table.innerHTML += `
-                    <tr>
-                        <td>${item.incident_number}</td>
-                        <td>${item.severity}</td>
-                        <td>${item.date}</td>
-                        <td>${item.analyst_name}</td>
-                        <td>${item.incident_type}</td>
-                        <td>${item.email_address}</td>
-                        <td>${item.subject_line}</td>
-                        <td>${item.notes}</td>
-                        <td>${item.emails_sent}</td>
-                        <td>${item.replies}</td>
-                    </tr>
-                `;
+                let row = table.insertRow();
+		row.setAttribute('data-id', item._id);  // <-- Make sure to set this attribute
+    		
+
+                row.insertCell(0).innerHTML = '<input type="checkbox" class="recordCheckbox">'; // for the checkbox
+
+                // Explicitly set each cell's content to match the correct property from your data
+                row.insertCell(1).textContent = item.incident_number || ''; // || '' ensures that if the value is undefined, it defaults to an empty string
+                row.insertCell(2).textContent = item.severity || '';
+                row.insertCell(3).textContent = item.date || '';
+                row.insertCell(4).textContent = item.analyst_name || '';
+                row.insertCell(5).textContent = item.incident_type || '';
+                row.insertCell(6).textContent = item.email_address || '';
+                row.insertCell(7).textContent = item.subject_line || '';
+		row.insertCell(8).textContent = item.urls || '';
+                row.insertCell(9).textContent = item.notes || '';
+                row.insertCell(10).textContent = item.emails_sent || '';
+                row.insertCell(11).textContent = item.replies || '';
             });
         });
     });
+</script>
+
+
+
     </script>
+
+<script>
+// Wait for the entire content of the window to be loaded
+window.addEventListener('DOMContentLoaded', (event) => {
+
+    // Select the form
+    const form = document.querySelector('form');
+
+    // Listen for form submission
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault(); // Prevents the default form submission
+
+        // Use FormData to retrieve the values entered in the form
+        const formData = new FormData(form);
+	formData.append('urls', document.getElementById('urls').value);
+
+        try {
+            // Send the form data to the server using fetch()
+            const response = await fetch('/submit', {
+                method: 'POST',
+                body: formData,
+            });
+
+            // Check if the response is successful
+            if (response.ok) {		
+		// First, check the response text to understand what you're receiving
+            	const responseText = await response.text();
+            	console.log('Server response:', responseText);	
+
+                // Then, if you're sure it's JSON, you can parse it
+            	const data = JSON.parse(responseText);
+
+                // Get the table where the data will be displayed
+                const displayTable = document.getElementById('data-display');
+
+                // Create a new row and fill it with data
+                const newRow = displayTable.insertRow(-1); // -1 means the new row will be inserted at the last position
+
+		// Insert a new cell for the checkbox and set its content
+    		const checkboxCell = newRow.insertCell(0);
+   		checkboxCell.innerHTML = '<input type="checkbox" class="recordCheckbox">';
+
+
+                // Assuming the server responds with the same object keys as the form's names
+                // Insert cells and content
+                const cell1 = newRow.insertCell(1);
+                cell1.textContent = data.incident_number;
+
+                const cell2 = newRow.insertCell(2);
+                cell2.textContent = data.severity;
+
+                // Extract the date string from the date object and optionally format it
+		const dateString = data.date.$date;
+		const formattedDate = new Date(dateString).toLocaleDateString("en-US");
+                
+		const cell3 = newRow.insertCell(3);
+                cell3.textContent = formattedDate;
+
+                const cell4 = newRow.insertCell(4);
+                cell4.textContent = data.analyst_name;
+
+                const cell5 = newRow.insertCell(5);
+                cell5.textContent = data.incident_type;
+
+                const cell6 = newRow.insertCell(6);
+		cell6.textContent = data.email_address;
+
+		const cell7 = newRow.insertCell(7);
+		cell7.textContent = data.subject_line;
+
+		const cell8 = newRow.insertCell(8);
+		cell8.textContent = data.urls;
+
+		const cell9 = newRow.insertCell(9);
+		cell9.textContent = data.notes;
+
+		const cell10 = newRow.insertCell(10);
+		cell10.textContent = data.emails_sent;
+
+		const cell11 = newRow.insertCell(11);
+		cell11.textContent = data.replies;
+
+            } else {
+                throw new Error(`Submission failed with status code: ${response.status}`);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            // Optionally: display a message to the user about the failure
+        }
+    });
+});
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+	
+
+        // Getting the delete button element
+        const deleteRecordButton = document.getElementById("deleteRecordButton");
+
+        // Adding click event listener to the delete button
+        deleteRecordButton.addEventListener("click", function() {
+            // Array to hold the IDs of the records to delete
+            let idsToDelete = [];
+
+            // Gathering all checked records
+            document.querySelectorAll('.recordCheckbox:checked').forEach(checkbox => {
+                let recordId = checkbox.closest('tr').getAttribute('data-id');
+                idsToDelete.push(recordId);
+            });
+
+            // Check if any records were selected
+            if (idsToDelete.length === 0) {
+                alert('No records selected for deletion.');
+                return;
+            }
+
+            // Confirm with the user
+            let confirmation = confirm('Are you sure you want to delete the selected records?');
+            if (!confirmation) {
+                return;
+            }
+
+            // Create an asynchronous function for the fetch operation
+            async function deleteRecords() {
+                try {
+                    // Send a request to the server to delete records with these IDs
+                    let response = await fetch('/delete-incidents', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ ids: idsToDelete }) // send the IDs as JSON
+                    });
+
+                    // Convert the response to JSON
+                    let result = await response.json();
+
+                    if (response.ok) {
+                        alert('Records deleted successfully.');
+
+                        // If successful, remove the rows from the table
+                        idsToDelete.forEach(id => {
+                            let row = document.querySelector(`tr[data-id="${id}"]`);
+                            if (row) {
+                                row.remove();
+                            }
+                        });
+                    } else {
+                        // If there was a problem with the deletion process
+                        let message = result.message || 'Error deleting records.';
+                        alert(message);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred while deleting records.');
+                }
+            }
+
+            // Call the asynchronous function
+            deleteRecords();
+        });
+    });
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Regular expression to detect URLs
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+
+    // Process each 'notes' cell in the table
+    document.querySelectorAll('.notes').forEach(cell => {
+        // Replace URLs in the text with clickable links
+        cell.innerHTML = cell.textContent.replace(urlRegex, '<a href="$1" class="urlscan-link">$1</a>');
+    });
+
+    // Add a click event listener to each link
+    document.querySelectorAll('.urlscan-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();  // Prevent the default click behavior
+            let url = e.target.href;
+
+            // Fetch the URL scan results
+            fetch(`/urlscan?url=${url}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Display the results in the 'resultLinkContainer'
+                    document.getElementById("urlscanResult").innerText = JSON.stringify(data, null, 2);
+
+                    // Display a clickable link if there's a 'result' property in the returned data
+                    if (data.result) {
+                        let linkContainer = document.getElementById("resultLinkContainer");
+                        linkContainer.innerHTML = `<a href="${data.result}" target="_blank">View Scan Result</a>`;
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    document.getElementById("urlscanResult").innerText = "Error fetching data!";
+                });
+        });
+    });
+});
+
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // This function handles clicks on URL links in your table.
+    function handleUrlClick(e) {
+        e.preventDefault();  // Stop the browser from following the link
+
+        // 'currentTarget' refers to the element to which the event listener is attached
+        // as opposed to 'target' which indicates the element that was actually clicked
+        const url = e.currentTarget.getAttribute('data-url'); 
+
+        // Continue with your existing fetch logic using the extracted URL
+        fetch(`/urlscan?url=${url}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("urlscanResult").innerText = JSON.stringify(data, null, 2);
+                if (data.result) {
+                    let linkContainer = document.getElementById("resultLinkContainer");
+                    linkContainer.innerHTML = `<a href="${data.result}" target="_blank">View Scan Result</a>`;
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                document.getElementById("urlscanResult").innerText = "Error fetching data!";
+            });
+    }
+
+    // Attach the above function as an event listener to each link in the 'URLs' column
+    document.querySelectorAll('.url-link').forEach(linkElement => {
+        linkElement.addEventListener('click', handleUrlClick);
+    });
+});
+</script>
+
+
 
 </body>
 </html>

@@ -13,9 +13,10 @@ from flask import session# for login sessions
 import logging
 from flask import Flask
 from datetime import timedelta
-
-
-
+from bson import ObjectId
+from flask import request, jsonify
+from bson import ObjectId
+import traceback
 
 
 
@@ -47,10 +48,14 @@ from bson import ObjectId
 import json  # Import the standard library's json
 
 class JSONEncoder(json.JSONEncoder):
+    ''' extend json-encoder class'''
+
     def default(self, o):
         if isinstance(o, ObjectId):
             return str(o)
-        return super().default(o)
+        if isinstance(o, datetime.datetime):
+            return o.isoformat()
+        return json.JSONEncoder.default(self, o)
 
 app.json_encoder = JSONEncoder
 
@@ -74,7 +79,7 @@ collection = db["incidents"]#collection name
 
 data_list = []# for posting data to the bottom when submit button pressed
 
-API_KEY_URL = "key"  #This is the API key for URL scan
+
 
 # helps prevent XSS attacks ---***experimental this changes input***---
 def sanitize_input(text):
@@ -174,6 +179,8 @@ def homepage():
 
 @app.route("/create-incident", methods=["GET"])
 def create_incident():
+    # Get incidents from the database
+    incidents = db.incidents.find()
     print('Session data at /create-incident:', session.items())
     return render_template("createIncident.html")
 
@@ -229,23 +236,44 @@ def submit_data():
     except ValueError:
         return "Invalid date format. Expected MM-DD-YYYY.", 400
     
-    #sanitize
-    incident_number = sanitize_input(request.form["incident_number"])
-    analyst_name = sanitize_input(request.form["analyst_name"])
+      
+    try:
+        # Assuming form data is correct, construct the data dictionary
+        data = {
+            "incident_number": sanitize_input(request.form["incident_number"]),
+            "severity": request.form["severity"],
+            "date": datetime.strptime(request.form["date"], '%m-%d-%Y'),  # validate and convert date
+            "analyst_name": sanitize_input(request.form["analyst_name"]),
+            "incident_type": request.form["incident_type"],
+            "email_address": request.form["email_address"],
+            "subject_line": request.form["subject_line"],
+            "urls": request.form["urls"],
+            "notes": request.form["notes"],
+            "emails_sent": request.form["emails_sent"],
+            "replies": request.form["replies"]
+        }
 
-    data = {
-        "incident_number": incident_number,
-	    "severity": request.form["severity"],  # Adding severity
-        "date": request.form["date"],
-        "analyst_name": analyst_name,
-        "incident_type": request.form["incident_type"],
-        "email_address": request.form["email_address"],
-        "subject_line": request.form["subject_line"],
-        "notes": request.form["notes"],
-        "emails_sent": request.form["emails_sent"],
-        "replies": request.form["replies"]
-    }
-    data_list.append(data)
+
+        # Insert data directly into the MongoDB collection
+        collection.insert_one(data)
+
+        # Manually serialize the data, including the ObjectId instances
+        response_data = json_util.dumps(data)
+
+        # Redirect back to the index with a success message, or wherever appropriate
+        flash('Incident submitted successfully!', 'success')  # if you're using Flask's flash messaging
+        return app.response_class(response=response_data, status=200, mimetype='application/json')
+
+    except Exception as e:
+        # Log the error (consider using actual logging instead of print for production applications)
+        print(f"An error occurred when submitting the form: {e}")
+
+        # Give a failure message and stay on the form page (or handle error differently)
+        flash('An error occurred. Please try again.', 'error')  # if you're using Flask's flash messaging
+        return redirect(url_for('index'))  # This would typically redirect back to the form submission page
+
+
+
     return redirect(url_for('index'))#basically reload the page on client so they see updated submitted data
 
 
@@ -268,7 +296,10 @@ def load_from_mongo():
         return redirect(url_for("login"))
 
     global data_list  
-    data_list = list(collection.find({}, {'_id': 0}))#at the moment, this will get all the data in the collection and load it
+    data_list = list(collection.find())#at the moment, this will get all the data in the collection and load it
+   # Convert ObjectId fields to strings for JSON serialization
+    for item in data_list:
+        item['_id'] = str(item['_id'])
     return redirect(url_for('index'))
 
 
@@ -278,7 +309,7 @@ def export_to_csv():
     if "username" not in session:
         return redirect(url_for("login"))
 
-    keys = ["incident_number","severity", "date", "analyst_name", "incident_type", "email_address", "subject_line", "notes", "emails_sent", "replies"]
+    keys = ["incident_number","severity", "date", "analyst_name", "incident_type", "email_address", "subject_line","urls", "notes", "emails_sent", "replies"]
     mode = 'a' if os.path.exists("data.csv") else 'w'#if file is there append data, otherwise create a new file
     with open("data.csv", mode, newline='') as output_file:
         dict_writer = csv.DictWriter(output_file, keys)#create a dictionary writer to output to csv
@@ -310,9 +341,19 @@ def urlscan():
 
     url = request.args.get('url')
     
+    # Load the configuration file
+    try:
+        with open('config.json', 'r') as config_file:
+            config = json.load(config_file)
+            api_key_url = config['API_KEY_URL']
+    except (FileNotFoundError, KeyError):
+        # Handle the case where the file is missing or the key is not present
+        return jsonify({"error": "Configuration for API key is missing."}), 500
+
+
     headers = {
         "Content-Type": "application/json",#get json data
-        "API-Key": API_KEY_URL
+        "API-Key": api_key_url
     }
     
     data = {
@@ -331,24 +372,76 @@ def urlscan():
 
 @app.route("/search-database", methods=["POST"])
 def search_database():
-    query = request.form.get("query")
+     try:
+        query = request.form.get("query")
 
-    # Search all fields for the query
-    results = collection.find({
-        "$or": [
-            {"incident_number": {"$regex": query, "$options": "i"}},
-            {"severity": {"$regex": query, "$options": "i"}},
-            {"date": {"$regex": query, "$options": "i"}},
-            {"analyst_name": {"$regex": query, "$options": "i"}},
-            {"incident_type": {"$regex": query, "$options": "i"}},
-            {"email_address": {"$regex": query, "$options": "i"}},
-            {"subject_line": {"$regex": query, "$options": "i"}},
-            {"notes": {"$regex": query, "$options": "i"}},
-            {"emails_sent": {"$regex": query, "$options": "i"}},
-            {"replies": {"$regex": query, "$options": "i"}}
-        ]
-    })
-      
+        # Search all fields for the query
+        results = collection.find({
+            "$or": [
+                {"incident_number": {"$regex": query, "$options": "i"}},
+                {"severity": {"$regex": query, "$options": "i"}},
+                {"date": {"$regex": query, "$options": "i"}},
+                {"analyst_name": {"$regex": query, "$options": "i"}},
+                {"incident_type": {"$regex": query, "$options": "i"}},
+                {"email_address": {"$regex": query, "$options": "i"}},
+                {"subject_line": {"$regex": query, "$options": "i"}},
+                {"urls": {"$regex": query, "$options": "i"}},
+                {"notes": {"$regex": query, "$options": "i"}},
+                {"emails_sent": {"$regex": query, "$options": "i"}},
+                {"replies": {"$regex": query, "$options": "i"}}
+            ]
+        })
+      # Convert each MongoDB document to a dictionary that's JSON serializable
+        serialized_results = []
+        for result in results:
+            # Convert ObjectId to string
+            if '_id' in result:
+                result['_id'] = str(result['_id'])
+            serialized_results.append(result)
+
+        return jsonify(serialized_results)  # This line sends a JSON response
+     
+     except Exception as e:  # This block catches all exceptions and returns an error response
+        print(f"An error occurred: {e}")
+        response = jsonify(error=str(e))
+        response.status_code = 500
+        return response
+
+
+
+
+
+
+@app.route("/delete-incidents", methods=["POST"])
+def delete_incidents():
+    try:
+        if request.is_json:
+            incidents_to_delete = request.json.get('ids', [])
+            if incidents_to_delete:
+                failed_deletions = []
+                for str_id in incidents_to_delete:
+                    obj_id = ObjectId(str_id)  # This could be a point of failure if str_id is not valid
+                    deletion_result = collection.delete_one({'_id': obj_id})
+
+                    if deletion_result.deleted_count == 0:
+                        failed_deletions.append(str_id)
+
+                if failed_deletions:
+                    return jsonify({'success': False, 'failed_deletions': failed_deletions}), 500
+                else:
+                    return jsonify({'success': True, 'message': 'Incidents deleted successfully.'}), 200
+            else:
+                return jsonify({'success': False, 'message': 'No valid IDs received.'}), 400
+        else:
+            return jsonify({'success': False, 'message': 'Request body must be JSON.'}), 400
+
+    except Exception as e:
+        print(f"An error occurred: {e}")  # It might be useful to print the error to the console.
+        traceback.print_exc()  # This will print the stack trace, which should help in debugging.
+        return jsonify({'success': False, 'message': 'An error occurred while processing your request.'}), 500
+
+
+
     # Convert each MongoDB document to a dictionary that's JSON serializable
     serialized_results = []
     for result in results:

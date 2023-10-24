@@ -38,7 +38,7 @@
 
             <div class="inputContainer">
                 <label for="date">Date:</label>
-                <input type="text" id="date" name="date">
+                <input type="date" id="date" name="date">
             </div>
 
             <div class="inputContainer">
@@ -57,7 +57,7 @@
 
             <div class="inputContainer">
                 <label for="email_address">Email Address:</label>
-                <input type="text" id="email_address" name="email_address">
+                <input type="email" id="email_address" name="email_address" pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}" required>
             </div>
 
             <div class="inputContainer">
@@ -134,7 +134,7 @@
         {% for item in data_list %}
         <tr>
             <td>{{ item.incident_number }}</td>
-        <td>{{ item.severity }}</td>
+            <td>{{ item.severity }}</td>
             <td>{{ item.date }}</td>
             <td>{{ item.analyst_name }}</td>
             <td>{{ item.incident_type }}</td>

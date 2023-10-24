@@ -114,7 +114,7 @@ def homepage():
 # added to link to view incidents page
 @app.route("/view-incidents", methods=["GET"])
 def view_incidents():
-    return render_template("viewIncidents.html")
+    return render_template("viewIncidents.html", data_list=data_list)
 
 
 # added to link to view statistics page
@@ -153,7 +153,13 @@ def submit_data():
     # Validate the date
     date_str = request.form["date"]
     try:
-        valid_date = datetime.strptime(date_str, '%m-%d-%Y')  # assuming format is MM-DD-YYYY
+        # valid_date = datetime.strptime(date_str, '%m-%d-%Y')  # assuming format is MM-DD-YYYY
+        # Updated the text input to be a date wich defaults to the form YYYY-MM-DD
+        print(date_str)
+        valid_date = datetime.strptime(date_str, '%Y-%m-%d')
+
+        # Reverse the order of components
+        reversed_date_str = parsed_date.strftime('%d-%m-%Y')
     except ValueError:
         return "Invalid date format. Expected MM-DD-YYYY.", 400
     
@@ -164,7 +170,7 @@ def submit_data():
     data = {
         "incident_number": incident_number,
 	    "severity": request.form["severity"],  # Adding severity
-        "date": request.form["date"],
+        "date": request.form["date"].strftime('%d-%m-%Y'),
         "analyst_name": analyst_name,
         "incident_type": request.form["incident_type"],
         "email_address": request.form["email_address"],
@@ -198,7 +204,6 @@ def load_from_mongo():
     global data_list  
     data_list = list(collection.find({}, {'_id': 0}))#at the moment, this will get all the data in the collection and load it
     return redirect(url_for('index'))
-
 
 #When this button is pressed, get all the keys in a list structure and write to csv, then append data in each column
 @app.route("/export-to-csv", methods=["GET"])

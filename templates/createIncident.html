@@ -1,12 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
+<!--The javascripts are so messy-->
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<meta charset="UTF-8">
     <title>Incident App</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}">
+
+
+
+
+<script>
+        // Initial application of the URL click handler (for page load).
+        document.addEventListener('DOMContentLoaded', function() {
+            applyUrlClickHandler();  // Apply the handler on page load.
+        });
+    </script>
+
+   
+<script>
+// Initial application of the URL click handler (for page load).
+document.addEventListener('DOMContentLoaded', function() {
+    applyUrlClickHandler();  // Apply the handler on page load.
+});
+</script>
+
 </head>
 <body>
+<!-- display urlscan result here -->
+
 
     <button id="back_button" onclick="location.href='/dashboard'">Back To Dashboard</button>
 
@@ -16,7 +39,17 @@
         <input type="text" id="url" placeholder="Enter URL">
         <button id="urlscanButton">urlscan.io</button>
         <pre id="urlscanResult" style="background-color: #f8f8f8; padding: 10px;">Results will appear here.</pre>
-        <div id="resultLinkContainer"></div>
+        <div id="resultLinkContainer">
+
+
+</div>
+
+<!-- new place for clickable link -->
+
+<p id="resultLink"></p> <!-- Placeholder for the clickable link -->
+
+
+
     </div>
 
     <form action="/submit" method="post">
@@ -147,36 +180,68 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // This function handles clicks on URL links in the table.
+    // Chris This function sends the URL to the server-side and then processes the response.
     function handleUrlClick(e) {
-        e.preventDefault();  // Stop the browser from following the link
-
-        // 'currentTarget' refers to the element to which the event listener is attached
-        // as opposed to 'target' which indicates the element that was actually clicked
+        e.preventDefault();
         const url = e.currentTarget.getAttribute('data-url'); 
 
-       
+        // Scroll to the URL scan section when a URL is clicked.
+        document.getElementById('urlscanResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        // Send the URL for scanning.
         fetch(`/urlscan?url=${url}`)
             .then(response => response.json())
             .then(data => {
-                document.getElementById("urlscanResult").innerText = JSON.stringify(data, null, 2);
+                if (data.error) {
+                    console.error("Error:", data.error);
+                    return;
+                }
+
                 if (data.result) {
-                    let linkContainer = document.getElementById("resultLinkContainer");
-                    linkContainer.innerHTML = `<a href="${data.result}" target="_blank">View Scan Result</a>`;
+                    // Clear previous contents
+                    let resultContainer = document.getElementById("resultLinkContainer");
+                    resultContainer.innerHTML = '';
+
+                    // Create a countdown element.
+                    let countdownElement = document.createElement('div');
+                    countdownElement.id = "countdown";
+                    countdownElement.innerText = "Opening in 20 seconds...";
+                    resultContainer.appendChild(countdownElement);
+
+                    // Create a clickable link for the user.
+                    let linkElement = document.createElement('a');
+                    linkElement.href = data.result;
+                    linkElement.target = "_blank";
+                    linkElement.innerText = "Click here if you are not redirected.";
+                    resultContainer.appendChild(linkElement);
+
+                    // Begin the countdown.
+                    let counter = 20;
+                    let interval = setInterval(() => {
+                        if (counter === 0) {
+                            clearInterval(interval);
+                            countdownElement.innerText = "Redirecting...";
+                            window.open(data.result, '_blank');
+                        } else {
+                            countdownElement.innerText = "Opening in " + counter + " seconds...";
+                        }
+                        counter--;
+                    }, 1000);
                 }
             })
             .catch(error => {
                 console.error("Error:", error);
-                document.getElementById("urlscanResult").innerText = "Error fetching data!";
             });
     }
 
-    // Attach the above function as an event listener to each link in the 'URLs' column
+    // Apply the click event handler to all URL links in the table.
     document.querySelectorAll('.url-link').forEach(linkElement => {
         linkElement.addEventListener('click', handleUrlClick);
     });
 });
 </script>
+
+
 
 
 
@@ -227,20 +292,54 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <!--hello javascript section , first part if for the urlscan api button and display-->
     <script>
-    //event listener setup for urlscan button click
+document.addEventListener('DOMContentLoaded', function() {
     document.getElementById("urlscanButton").addEventListener("click", function() {
-        let url = document.getElementById("url").value;//url to post to urlscan.io
-        //This contacts the /urlscan app route to get the urlscan info
+        // Get the URL from the input field.
+        let url = document.getElementById("url").value;
+        
+        // Display a message to let the user know that something is happening.
+        document.getElementById("urlscanResult").innerText = "Processing... Please wait.";
+
+        // Contact the /urlscan route on server.
         fetch(`/urlscan?url=${url}`)
             .then(response => response.json())
             .then(data => {
-                // Convert the JSON data to a formatted string and display it inside an element with the id "urlscanResult"
-                document.getElementById("urlscanResult").innerText = JSON.stringify(data, null, 2);
-    
-        // If the returned JSON data has a "result" property, display a clickable link to view the scan result.    
-        if (data.result) {
-                    let linkContainer = document.getElementById("resultLinkContainer");
-                    linkContainer.innerHTML = `<a href="${data.result}" target="_blank">View Scan Result</a>`;
+                // Check if there was an error and display it.
+                if (data.error) {
+                    document.getElementById("urlscanResult").innerText = "Error: " + data.error;
+                    return;
+                }
+
+                // If there's a result, display the link.
+                if (data.result) {
+                    let resultContainer = document.getElementById("resultLinkContainer");
+                    resultContainer.innerHTML = '';
+                    
+                    // Create a countdown element.
+                    let countdownElement = document.createElement('div');
+                    countdownElement.id = "countdown";
+                    countdownElement.innerText = "Opening in 20 seconds...";
+                    resultContainer.appendChild(countdownElement);
+
+                    // Display a clickable link to the user.
+                    let linkElement = document.createElement('a');
+                    linkElement.href = data.result;
+                    linkElement.target = "_blank";  // Open in new tab.
+                    linkElement.innerText = "Click here if you are not redirected.";
+                    resultContainer.appendChild(linkElement);
+
+                    // Count down from 20.
+                    let counter = 20;
+                    let interval = setInterval(() => {
+                        if (counter === 0) {
+                            clearInterval(interval);
+                            countdownElement.innerText = "Redirecting...";
+                            window.open(data.result, '_blank');
+                        } else {
+                            countdownElement.innerText = "Opening in " + counter + " seconds...";
+                        }
+                        counter--;
+                    }, 1000);
                 }
             })
             .catch(error => {
@@ -248,7 +347,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById("urlscanResult").innerText = "Error fetching data!";
             });
     });
+});
 </script>
+
+
+
+
     <script>
         document.getElementById("newSearchButton").addEventListener("click", function() {
             var query = document.getElementById("newSearchInput").value;
@@ -273,21 +377,50 @@ document.addEventListener('DOMContentLoaded', function() {
                 let row = table.insertRow();
 		row.setAttribute('data-id', item._id);  // <-- Make sure to set this attribute
     		
+		// Checkbox cell
+            	let checkboxCell = row.insertCell();
+           	 let checkbox = document.createElement('input');
+            	checkbox.type = "checkbox";
+            	checkbox.className = "recordCheckbox";
+            	checkbox.id = "recordCheckbox-" + item._id;
+            	checkboxCell.appendChild(checkbox);
 
-                row.insertCell(0).innerHTML = '<input type="checkbox" class="recordCheckbox">'; // for the checkbox
+                // Other cells
+            row.insertCell().textContent = item.incident_number || '';
+            row.insertCell().textContent = item.severity || '';
+            row.insertCell().textContent = item.date || '';
+            row.insertCell().textContent = item.analyst_name || '';
+            row.insertCell().textContent = item.incident_type || '';
+            row.insertCell().textContent = item.email_address || '';
+            row.insertCell().textContent = item.subject_line || '';
 
-                // Explicitly set each cell's content to match the correct property from the data
-                row.insertCell(1).textContent = item.incident_number || ''; // || '' ensures that if the value is undefined, it defaults to an empty string
-                row.insertCell(2).textContent = item.severity || '';
-                row.insertCell(3).textContent = item.date || '';
-                row.insertCell(4).textContent = item.analyst_name || '';
-                row.insertCell(5).textContent = item.incident_type || '';
-                row.insertCell(6).textContent = item.email_address || '';
-                row.insertCell(7).textContent = item.subject_line || '';
-		row.insertCell(8).textContent = item.urls || '';
-                row.insertCell(9).textContent = item.notes || '';
-                row.insertCell(10).textContent = item.emails_sent || '';
-                row.insertCell(11).textContent = item.replies || '';
+            // URLs cell
+            let urlsCell = row.insertCell();
+            if (item.urls) {
+                // Assume item.urls is a string; split by ',' to mimic server-side behavior
+                let urls = item.urls.split(',');
+                urls.forEach(url => {
+                    url = url.trim();  // Remove any whitespace
+                    let link = document.createElement('a');
+                    link.href = "#";
+                    link.className = "url-link";
+                    link.setAttribute('data-url', url);
+                    link.textContent = url;
+                    link.style.display = 'block'; // Mimic server-side style
+                    urlsCell.appendChild(link);
+                });
+            } else {
+                urlsCell.textContent = 'N/A';
+            }
+
+            row.insertCell().textContent = item.notes || '';
+            row.insertCell().textContent = item.emails_sent || '';
+            row.insertCell().textContent = item.replies || '';
+
+
+	// After building the row, we need to reapply the click event listener to the new .url-link elements
+            // This function should be the same as the one used to apply the handler after the initial page load
+            applyUrlClickHandler();
             });
         });
     });
@@ -295,7 +428,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-    </script>
+  
 
 <script>
 // Wait for the entire content of the window to be loaded
@@ -501,38 +634,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 </script>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // This function handles clicks on URL links in the table.
-    function handleUrlClick(e) {
-        e.preventDefault();  // Stop the browser from following the link
 
-        // 'currentTarget' refers to the element to which the event listener is attached
-        // as opposed to 'target' which indicates the element that was actually clicked
-        const url = e.currentTarget.getAttribute('data-url'); 
-
-        // Continue with the existing fetch logic using the extracted URL
-        fetch(`/urlscan?url=${url}`)
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById("urlscanResult").innerText = JSON.stringify(data, null, 2);
-                if (data.result) {
-                    let linkContainer = document.getElementById("resultLinkContainer");
-                    linkContainer.innerHTML = `<a href="${data.result}" target="_blank">View Scan Result</a>`;
-                }
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                document.getElementById("urlscanResult").innerText = "Error fetching data!";
-            });
-    }
-
-    // Attach the above function as an event listener to each link in the 'URLs' column
-    document.querySelectorAll('.url-link').forEach(linkElement => {
-        linkElement.addEventListener('click', handleUrlClick);
-    });
-});
-</script>
 
 
 

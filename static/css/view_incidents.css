@@ -5,25 +5,6 @@ body {
     background-color: #f8f8f8;
 }
 
-/* Nav Styles */
-nav {
-    background-color: lightgray;
-    color: rgb(97, 211, 242);
-
-    height: 50px;
-}
-
-nav ul {
-    list-style: none;
-    padding: 10px;
-    margin: 0;
-    display: flex;
-}
-
-nav li {
-    margin-right: 20px;
-}
-
 header {
     background-color: #eee;
     padding: 10px;

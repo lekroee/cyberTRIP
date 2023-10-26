@@ -155,7 +155,6 @@ def submit_data():
     try:
         # valid_date = datetime.strptime(date_str, '%m-%d-%Y')  # assuming format is MM-DD-YYYY
         # Updated the text input to be a date wich defaults to the form YYYY-MM-DD
-        print(date_str)
         valid_date = datetime.strptime(date_str, '%Y-%m-%d')
 
         # Reverse the order of components
@@ -204,6 +203,16 @@ def load_from_mongo():
     global data_list  
     data_list = list(collection.find({}, {'_id': 0}))#at the moment, this will get all the data in the collection and load it
     return redirect(url_for('index'))
+# Added 10/25
+@app.route("/load-incidents", methods=["GET"])
+def load_incidents():
+    if "username" not in session:
+        return redirect(url_for("login"))
+
+    global data_list  
+    data_list = list(collection.find({}, {'_id': 0}))#at the moment, this will get all the data in the collection and load it
+    return redirect(url_for('view_incidents'))
+####
 
 #When this button is pressed, get all the keys in a list structure and write to csv, then append data in each column
 @app.route("/export-to-csv", methods=["GET"])

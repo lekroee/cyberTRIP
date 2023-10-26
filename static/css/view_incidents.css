@@ -1,0 +1,65 @@
+body {
+    font-family: 'Courier New', Courier, monospace;
+    margin: 0;
+    padding: 30px;
+    background-color: #f8f8f8;
+}
+
+/* Search Styles */
+#searchInput {
+    width: 70%;
+    height: 30px;
+}
+
+.error {
+    border: 2px solid red;
+}
+
+/* Table Styles */
+th {
+    background-color: rgb(97, 211, 242);
+    color: white;
+    padding: 10px 20px;
+    text-align: left;
+}
+
+td {
+    padding: 8px 20px;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* Buttons Styles */
+button {
+    padding: 10px;
+    margin: 5px;
+    cursor: pointer;
+}
+
+
+/* Header Styles */
+h2, h3 {
+    color: #333;
+}
+
+/* Results Display Styles */
+pre, #searchResults {
+    background-color: #f8f8f8;
+    padding: 10px;
+}
+
+/* Miscellaneous Styles */
+hr {
+    border-top: 5px solid black;
+}

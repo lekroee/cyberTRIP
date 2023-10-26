@@ -4,13 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Incidents</title>
-    <link rel="stylesheet" type="text/css" href="static/css/main.css">
+    <link rel="stylesheet" type="text/css" href="static/css/view_incidents.css">
 </head>
 
 <body>
 
     <button id="back_button" onclick="location.href='/dashboard'">Back To Dashboard</button>
-    
+    <button id="refresh" onclick="location.href='/load-incidents'">Refresh</button>
+
+    <!-- Search box and button -->
+    <div style="margin-top: 20px;">
+        <input type="text" id="searchInput" placeholder="Search Database">
+        <button id="searchButton">Search Database</button>
+    </div>
+
     <h2>Incident Table</h2>
 
     <!-- Display data here below everything. headings first-->
@@ -49,6 +56,24 @@
     </table>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if the flag is set in sessionStorage
+            const hasLoaded = sessionStorage.getItem('hasLoaded');
+
+            if (!hasLoaded) {
+                location.href = '/load-incidents';
+
+                // Set the flag in sessionStorage to true
+                sessionStorage.setItem('hasLoaded', true);
+            }
+        });
+
+        /**
+         * Sorts the rows of a table based on the content of the specified column.
+         *
+         * @param {number} columnIndex - The index of the column by which to sort the table.
+         * @returns {void}
+         */
         function sortTable(columnIndex) {
             const table = document.getElementById("incidentTable");
             const rows = Array.from(table.rows).slice(1); // Exclude the header row
@@ -82,6 +107,73 @@
             rows.forEach(row => tbody.appendChild(row));
         }
 
+        let searchBar = document.getElementById("searchInput");
+
+        searchBar.addEventListener('focus', function() {
+            if (searchBar.value == "No results") {
+                searchBar.value = "";
+            }
+            
+        });
+
+        searchBar.addEventListener('input', function() {
+            // Remove the error class when the input value changes
+            if (searchBar.value.trim() === '') {
+                searchBar.classList.remove('error');
+            }
+        });
+
+        searchBar.addEventListener('blur', function() {
+            // Remove the error class when the input loses focus if it's empty
+            if (searchBar.value.trim() === '') {
+                searchBar.classList.remove('error');
+            }
+        });
+
+        //This is a script for the search button
+        document.getElementById("searchButton").addEventListener("click", function() {
+            let query = document.getElementById("searchInput").value;
+            fetch("/search-database", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `query=${query}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.length == 0) {
+                    searchBar.classList.add("error");
+                    searchBar.value = "No results"
+                    return
+                }
+
+                let table = document.getElementById("incidentTable");
+                
+                // Clear previous results but keep headers
+                let headers = table.rows[0].outerHTML; // store the header row
+                console.log(headers)
+                table.innerHTML = headers;  
+
+                // Populate data rows
+                data.forEach(item => {
+                    table.innerHTML += `
+                        <tr>
+                            <td>${item.incident_number}</td>
+                            <td>${item.severity}</td>
+                            <td>${item.date}</td>
+                            <td>${item.analyst_name}</td>
+                            <td>${item.incident_type}</td>
+                            <td>${item.email_address}</td>
+                            <td>${item.subject_line}</td>
+                            <td>${item.notes}</td>
+                            <td>${item.emails_sent}</td>
+                            <td>${item.replies}</td>
+                        </tr>
+                    `;
+                });
+            });
+        });
     </script>
 
 </body>

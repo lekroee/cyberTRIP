@@ -1,8 +1,33 @@
 body {
     font-family: 'Courier New', Courier, monospace;
     margin: 0;
-    padding: 30px;
+    padding: 0;
     background-color: #f8f8f8;
+}
+
+/* Nav Styles */
+nav {
+    background-color: lightgray;
+    color: rgb(97, 211, 242);
+
+    height: 50px;
+}
+
+nav ul {
+    list-style: none;
+    padding: 10px;
+    margin: 0;
+    display: flex;
+}
+
+nav li {
+    margin-right: 20px;
+}
+
+header {
+    background-color: #eee;
+    padding: 10px;
+    text-align: center;
 }
 
 /* Search Styles */
@@ -15,21 +40,30 @@ body {
     border: 2px solid red;
 }
 
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
 /* Table Styles */
 th {
     background-color: rgb(97, 211, 242);
     color: white;
-    padding: 10px 20px;
+    padding: 10px;
     text-align: left;
 }
 
 td {
-    padding: 8px 20px;
+    padding: 8px;
 }
 
 table {
+    margin: auto;
     border-collapse: collapse;
     width: 100%;
+
+    table-layout: auto;
 }
 
 table, th, td {
@@ -42,9 +76,35 @@ tr:nth-child(even) {
 
 /* Buttons Styles */
 button {
-    padding: 10px;
-    margin: 5px;
+    margin: 10px;
+    display: inline-block;
+    padding: 10px 20px;
+
+    font-size: 16px;
+    text-align: center;
+    text-decoration: none;
+
+    border: 2px solid rgb(97, 211, 242);
+    color: rgb(97, 211, 242); 
+    background-color: #fff; 
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s, color 0.3s, box-shadow 0.3s; 
+
     cursor: pointer;
+}
+
+button:hover {
+    background-color: rgb(97, 211, 255);
+    color: #fff;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.buttonContainer {
+    display: flex;
+    justify-content: space-between;
+
+    width: 100%;
 }
 
 

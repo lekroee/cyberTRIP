@@ -7,8 +7,12 @@
 </head>
 <body>
 
-    <button id="back_button" onclick="location.href='/dashboard'">Back To Dashboard</button>
-
+    <div class="buttonContainer">
+        <button id="back_button" onclick="location.href='/dashboard'">Back To Dashboard</button>
+        <!-- Logout Button -->
+        <button id="logoutButton">Logout</button>
+    </div>
+    
     <!--API SECTION -->
     <div style="border: 1px solid black; padding: 10px; margin-bottom: 20px;">
         <h2>URL Scan</h2>
@@ -85,19 +89,19 @@
     </form>
 
     <!--buttons-->
-    <button onclick="location.href='/export-to-mongo'">Export Data to MongoDB</button>
-    <button onclick="location.href='/load-from-mongo'">Load Data from MongoDB</button>
-    <button onclick="location.href='/export-to-csv'">Export to CSV</button>
-    <button onclick="location.href='/clear-data'">Clear Data</button>
+    <!-- <div class="buttonContainer">
+        <button onclick="location.href='/export-to-mongo'">Export Data to MongoDB</button>
+        <button onclick="location.href='/load-from-mongo'">Load Data from MongoDB</button>
+        <button onclick="location.href='/export-to-csv'">Export to CSV</button>
+        <button onclick="location.href='/clear-data'">Clear Data</button>
+    </div> -->
+    
 
     <BR>
     <!-- Only show create user if current user is admin-->
     {% if session['user_type'] == 'superuser' %}
     <button onclick="location.href='/create-user'">Create New User</button>
     {% endif %}
-
-    <!-- Logout Button -->
-    <button id="logoutButton">Logout</button>
 
     <!-- Script for logout functionality -->
     <script>
@@ -118,7 +122,7 @@
     </script>
 
     <!-- Display data here below everything. headings first-->
-    <table id="data-display">
+    <!-- <table id="data-display">
         <tr>
             <th>Incident Number</th>
             <th>Severity</th>
@@ -145,19 +149,19 @@
             <td>{{ item.replies }}</td>
         </tr>
         {% endfor %}
-    </table>
+    </table> -->
 
     <!-- <hr style="border-top: 5px solid black;"> -->
 
     <!-- Search box and button -->
-    <div style="margin-top: 20px;">
+    <!-- <div style="margin-top: 20px;">
         <input type="text" id="searchInput" placeholder="Search Database">
         <button id="searchButton">Search Database</button>
     </div>
-
+ -->
     <!-- Display search results here -->
     <!-- style="margin-top: 20px; border-top: 1px solid black;"-->
-    <div>
+    <!-- <div>
         <h3>Search Results:</h3>
         <table id="searchResults">
             <tr>
@@ -172,13 +176,13 @@
                 <th>Emails Sent</th>
                 <th>Replies</th>
             </tr>
-            <!-- Data rows will be populated here by JavaScript -->
+             Data rows will be populated here by JavaScript 
         </table>
-    </div>
+    </div> -->
 
 
     <!--hello javascript section , first part if for the urlscan api button and display-->
-    <script>
+    <!-- <script>
     //event listener setup for urlscan button click
     document.getElementById("urlscanButton").addEventListener("click", function() {
         let url = document.getElementById("url").value;//url to post to urlscan.io
@@ -238,7 +242,7 @@
             });
         });
     });
-    </script>
+    </script> -->
 
 </body>
 </html>

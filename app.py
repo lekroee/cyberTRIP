@@ -33,8 +33,6 @@ app.json_encoder = JSONEncoder
 # Setup MongoDB connection, this must obviously be running already on localhost for this implementation, but I can change later
 client = MongoClient("mongodb://localhost:27017/")
 
-
-
 db = client["incident_db"]#database name
 users_collection = db["users"]#for login info users
 # Check if admin exists in users collection

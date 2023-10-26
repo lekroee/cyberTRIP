@@ -8,52 +8,65 @@
 </head>
 
 <body>
+    <nav>
+        <ul>
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li><a href="/load-incidents">Load Incidents</a></li>
+            <!-- Add more links as needed -->
+        </ul>
+    </nav>
 
-    <button id="back_button" onclick="location.href='/dashboard'">Back To Dashboard</button>
-    <button id="refresh" onclick="location.href='/load-incidents'">Refresh</button>
+    <header>
+        <h1>View Incidents</h1>
+    </header>
 
-    <!-- Search box and button -->
-    <div style="margin-top: 20px;">
-        <input type="text" id="searchInput" placeholder="Search Database">
-        <button id="searchButton">Search Database</button>
-    </div>
+    <div class="container">
+        <button id="back_button" onclick="location.href='/dashboard'">Back To Dashboard</button>
+        <button id="refresh" onclick="location.href='/load-incidents'">Refresh</button>
 
-    <h2>Incident Table</h2>
+        <!-- Search box and button -->
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search Database">
+            <button id="searchButton">Search Database</button>
+        </div>
 
-    <!-- Display data here below everything. headings first-->
-    <table id="incidentTable">
-        <thead>
-            <tr>
-            <th onclick="sortTable(0)">Incident Number</th>
-            <th onclick="sortTable(1)">Severity</th>
-            <th onclick="sortTable(2)">Date</th>
-            <th onclick="sortTable(3)">Analyst Name</th>
-            <th onclick="sortTable(4)">Incident Type</th>
-            <th onclick="sortTable(5)">Email Address</th>
-            <th onclick="sortTable(6)">Subject Line</th>
-            <th onclick="sortTable(7)">Notes</th>
-            <th onclick="sortTable(8)">Emails Sent</th>
-            <th onclick="sortTable(9)">Replies</th>
-        </tr>
-        </thead>
-    
-        <tbody>
-            {% for item in data_list %}
-            <tr>
-                <td>{{ item.incident_number }}</td>
-                <td>{{ item.severity }}</td>
-                <td>{{ item.date }}</td>
-                <td>{{ item.analyst_name }}</td>
-                <td>{{ item.incident_type }}</td>
-                <td>{{ item.email_address }}</td>
-                <td>{{ item.subject_line }}</td>
-                <td>{{ item.notes }}</td>
-                <td>{{ item.emails_sent }}</td>
-                <td>{{ item.replies }}</td>
+        <h2>Incident Table</h2>
+
+        <!-- Display data here below everything. headings first-->
+        <table id="incidentTable">
+            <thead>
+                <tr>
+                <th onclick="sortTable(0)">Incident Number</th>
+                <th onclick="sortTable(1)">Severity</th>
+                <th onclick="sortTable(2)">Date</th>
+                <th onclick="sortTable(3)">Analyst Name</th>
+                <th onclick="sortTable(4)">Incident Type</th>
+                <th onclick="sortTable(5)">Email Address</th>
+                <th onclick="sortTable(6)">Subject Line</th>
+                <th onclick="sortTable(7)">Notes</th>
+                <th onclick="sortTable(8)">Emails Sent</th>
+                <th onclick="sortTable(9)">Replies</th>
             </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+        
+            <tbody>
+                {% for item in data_list %}
+                <tr>
+                    <td>{{ item.incident_number }}</td>
+                    <td>{{ item.severity }}</td>
+                    <td>{{ item.date }}</td>
+                    <td>{{ item.analyst_name }}</td>
+                    <td>{{ item.incident_type }}</td>
+                    <td>{{ item.email_address }}</td>
+                    <td>{{ item.subject_line }}</td>
+                    <td>{{ item.notes }}</td>
+                    <td>{{ item.emails_sent }}</td>
+                    <td>{{ item.replies }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

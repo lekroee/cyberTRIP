@@ -494,7 +494,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
 
         // Use FormData to retrieve the values entered in the form
         const formData = new FormData(form);
-	formData.append('urls', document.getElementById('urls').value);
+	    formData.append('urls', document.getElementById('urls').value);
 
         try {
             // Send the form data to the server using fetch()
@@ -505,7 +505,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
 
             // Check if the response is successful
             if (response.ok) {		
-		// First, check the response text to understand what is being received
+		    // First, check the response text to understand what is being received
             	const responseText = await response.text();
             	console.log('Server response:', responseText);	
 

@@ -48,8 +48,8 @@ def get_environment_variable(key):
     except KeyError:
         # The environment variable was not found
         print(f"Error: The environment variable {key} was not set.")
-        # Handle the error (e.g., you could exit with an error message, or you could return a default value)
-        # Here, we're exiting the program. You might want to do something different.
+        # Handle the error (exit with an error message, or return a default value)
+        
         exit(1)  # Exit with a status code indicating an error occurred.
     else:
         return value
@@ -276,7 +276,7 @@ def submit_data():
         response_data = json_util.dumps(data)
 
         # Redirect back to the index with a success message, or wherever appropriate
-        flash('Incident submitted successfully!', 'success')  # if you're using Flask's flash messaging
+        flash('Incident submitted successfully!', 'success')  # Flask's flash messaging
         return app.response_class(response=response_data, status=200, mimetype='application/json')
 
     except Exception as e:
@@ -284,7 +284,7 @@ def submit_data():
         print(f"An error occurred when submitting the form: {e}")
 
         # Give a failure message and stay on the form page (or handle error differently)
-        flash('An error occurred. Please try again.', 'error')  # if you're using Flask's flash messaging
+        flash('An error occurred. Please try again.', 'error')  # Flask's flash messaging
         return redirect(url_for('index'))  # This would typically redirect back to the form submission page
 
 
@@ -348,7 +348,7 @@ apis for external malware tools below
 '''
 
 
-#urlscan api - description is on their website - API KEY ISN'T READY YET. THIS WON'T WORK IF THERE IS NO API KEY
+#urlscan api - description is on their website - at the moment it's getting the key from config.json, I can't get it from the environment variable correctly atm
 @app.route("/urlscan", methods=["GET"])
 def urlscan():
     if "username" not in session:

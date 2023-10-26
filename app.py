@@ -19,13 +19,10 @@ from bson import ObjectId
 import traceback
 
 
-
-
 app = Flask(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
 app.config['SECRET_KEY'] = 'your_secret_key'
-
 
 
 # Session security settings, this keeps info in cookies safe
@@ -220,7 +217,6 @@ def dashboard():
 # EDITED Oct. 18th
 #for loading index, it displays any data in data list at the bottom when loaded
 @app.route("/")
-
 def start():
     return render_template("homepage.html")
 
@@ -249,18 +245,15 @@ def submit_data():
         # Updated the text input to be a date wich defaults to the form YYYY-MM-DD
         valid_date = datetime.strptime(date_str, '%Y-%m-%d')
 
-        # Reverse the order of components
-        reversed_date_str = parsed_date.strftime('%d-%m-%Y')
     except ValueError:
         return "Invalid date format. Expected MM-DD-YYYY.", 400
     
-      
     try:
         # Assuming form data is correct, construct the data dictionary
         data = {
             "incident_number": sanitize_input(request.form["incident_number"]),
             "severity": request.form["severity"],
-            "date": datetime.strptime(request.form["date"], '%m-%d-%Y'),  # validate and convert date
+            "date": datetime.strptime(request.form["date"], '%Y-%m-%d'),  # validate and convert date
             "analyst_name": sanitize_input(request.form["analyst_name"]),
             "incident_type": request.form["incident_type"],
             "email_address": request.form["email_address"],
@@ -270,7 +263,6 @@ def submit_data():
             "emails_sent": request.form["emails_sent"],
             "replies": request.form["replies"]
         }
-
 
         # Insert data directly into the MongoDB collection
         collection.insert_one(data)
@@ -293,7 +285,7 @@ def submit_data():
     data = {
         "incident_number": incident_number,
 	    "severity": request.form["severity"],  # Adding severity
-        "date": request.form["date"].strftime('%d-%m-%Y'),
+        "date": request.form["date"].strftime('%Y-%m-%d'),
         "analyst_name": analyst_name,
         "incident_type": request.form["incident_type"],
         "email_address": request.form["email_address"],
@@ -446,10 +438,6 @@ def search_database():
         response = jsonify(error=str(e))
         response.status_code = 500
         return response
-
-
-
-
 
 
 @app.route("/delete-incidents", methods=["POST"])

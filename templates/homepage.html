@@ -6,6 +6,17 @@
 </head>
 <body>
 
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class="flashed-messages">
+    {% for message in messages %}
+      <li>{{ message }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+
     <div id="navigation_bar">
         <h1 id="logo"> CyberTRIP </h1>
         <a class="links" href="{{ url_for('homepage', filename='templates/homepage.html') }}">About</a>

@@ -17,14 +17,17 @@ from bson import ObjectId
 from flask import request, jsonify
 from bson import ObjectId
 import traceback
-
-
+from flask import Flask, render_template, request, jsonify, make_response
+from flask import Flask, render_template, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
 app.config['SECRET_KEY'] = 'your_secret_key'
+
 
 
 
@@ -37,8 +40,15 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=1)  # Sessions last fo
 
 bcrypt = Bcrypt(app)#this is for encrypting login information with mongo
 
+
 # This global variable stores the timestamp of the last failed attempt and the number of failed attempts in the create user route.
 cooldown_info = {"last_attempt": None, "failed_attempts": 0}
+
+
+
+
+
+
 
 #I'm having trouble getting this to work correctly, until then, I'm using the json to store the api key
 def get_environment_variable(key):
@@ -82,6 +92,11 @@ client = MongoClient("mongodb://localhost:27017/")
 
 db = client["incident_db"]#database name
 users_collection = db["users"]#for login info users
+
+
+
+
+
 # Check if admin exists in users collection
 admin_exists = users_collection.find_one({"username": "admin"})
 #if not, create one first time
@@ -91,6 +106,7 @@ if not admin_exists:
     
 
 collection = db["incidents"]#collection name
+incidents_collection =db["incidents"]
 
 data_list = []# for posting data to the bottom when submit button pressed
 
@@ -194,6 +210,9 @@ def homepage():
 
 @app.route("/create-incident", methods=["GET"])
 def create_incident():
+    if "username" not in session:
+        return redirect(url_for("login"))
+    
     # Get incidents from the database
     incidents = db.incidents.find()
     print('Session data at /create-incident:', session.items())
@@ -265,7 +284,8 @@ def submit_data():
             "urls": request.form["urls"],
             "notes": request.form["notes"],
             "emails_sent": request.form["emails_sent"],
-            "replies": request.form["replies"]
+            "replies": request.form["replies"],
+            "tasks": [] 
         }
 
 
@@ -290,6 +310,53 @@ def submit_data():
 
 
     return redirect(url_for('index'))#basically reload the page on client so they see updated submitted data
+
+
+@app.route('/add-task/<incident_id>', methods=['POST'])
+def add_task(incident_id):
+    try:
+        # Convert the incident_id from a string to an ObjectId
+        obj_id = ObjectId(incident_id)
+    except:
+        return make_response("Invalid incident ID format", 400)
+
+    # Extract task details from the form
+    status = request.form.get('status')
+    assigned_to = request.form.get('assigned_to')
+    priority = request.form.get('priority')
+    task_notes = request.form.get('task_notes')
+
+     # Find the incident to which the task will be added
+    incident = collection.find_one({'_id': obj_id}, {"tasks": 1})  # retrieve only the 'tasks' field
+
+    if not incident:
+        return make_response("Incident not found", 404)
+
+    # Calculate the new task number (length of current tasks + 1)
+    current_tasks = incident.get('tasks', [])
+    new_task_number = len(current_tasks) + 1
+
+    # Create the new task
+    new_task = {
+        "task_number": new_task_number,
+        "status": status,
+        "assigned_to": assigned_to,
+        "priority": priority,
+        "task_notes": task_notes,
+    }
+
+    # Add the new task to the incident's list of tasks
+    update_result = collection.update_one(
+        {'_id': obj_id},
+        {'$push': {'tasks': new_task}}
+    )
+
+    if update_result.modified_count == 0:
+        return make_response("Incident not found or update failed", 404)
+
+    # Redirect to the incident details page or wherever appropriate
+    return redirect(url_for('incident_details', incident_id=incident_id))
+
 
 
 #store data that's display on the bottom of the page in mongo database
@@ -424,6 +491,32 @@ def search_database():
         return response
 
 
+
+
+
+@app.route('/incident-details/<incident_id>')
+def incident_details(incident_id):
+    try:
+        # Convert the incident_id from a string to an ObjectId
+        obj_id = ObjectId(incident_id)
+    except:
+        # If conversion fails, return an error (bad request)
+        return make_response("Invalid incident ID format", 400)
+
+    # Fetch the incident from your database using the incident_id
+    incident = collection.find_one({'_id': obj_id})
+
+    if incident:
+        # Render the HTML template and provide the incident data
+        return render_template('incident_details.html', incident=incident)
+    else:
+        # If no incident is found, you might want to redirect to a 404 page or similar
+        return make_response("Incident not found", 404)
+    
+def incident_report_page(incident_id):
+    # Assuming you have an 'incident_details.html' file in a 'templates' folder
+    # This will serve the HTML file when you navigate to '/incident-report/<incident_id>'
+    return render_template('incident_details.html', incident_id=incident_id)
 
 
 

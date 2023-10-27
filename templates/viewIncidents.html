@@ -41,16 +41,19 @@
     <div id="searchContainer">
         <input type="text" id="newSearchInput" placeholder="Enter search query">
         <button id="newSearchButton">Search</button>
+        <!-- Place somewhere in your HTML where appropriate -->
+        <button onclick="deleteSelectedIncidents()">Delete Selected Incidents</button>
+
     </div>
 
 
     <table id="incidentTable">
         <thead>
             <tr>
-                <th onclick="sortTable(0)">Incident Number</th>
-                <th onclick="sortTable(1)">Severity</th>
-                <th onclick="sortTable(2)">Date</th>
-                <th onclick="sortTable(3)">Analyst</th>
+                <th><input type="checkbox" id="selectAllCheckboxes"></th> <!-- This checkbox will select/deselect all -->
+                <th onclick="sortTable(1)">Incident Number</th>
+                <th onclick="sortTable(2)">Severity</th>
+                <th onclick="sortTable(3)">Date</th>
                 <th onclick="sortTable(4)">Incident Type</th>
             </tr>
         </thead>
@@ -128,29 +131,135 @@
                 // Create a new row and cells
                 let newRow = newTbody.insertRow();
 
+                // Checkbox cell
+                let checkboxCell = newRow.insertCell(0);
+                let checkbox = document.createElement('input');
+                checkbox.type = "checkbox";
+                checkbox.className = "recordCheckbox";
+                checkbox.value = incident._id;  // Assuming '_id' is the unique identifier for the incident
+                checkbox.onclick = function (e) {
+                    e.stopPropagation(); // This prevents the row's click event from firing when the checkbox is clicked
+                };
+
+                checkboxCell.appendChild(checkbox);
+
                 // Assuming the object structure is similar to the rows
                 // you have initially in your HTML (modify as needed)
-                let cell1 = newRow.insertCell(0);
+                let cell1 = newRow.insertCell(1);
                 cell1.textContent = incident.incident_number;
 
-                let cell2 = newRow.insertCell(1);
+                let cell2 = newRow.insertCell(2);
                 cell2.textContent = incident.severity;
 
-                let cell3 = newRow.insertCell(2);
+                let cell3 = newRow.insertCell(3);
                 cell3.textContent = incident.date;
-
-                let cell4 = newRow.insertCell(3);
-                cell4.textContent = incident.analyst;
-
+                                
                 let cell5 = newRow.insertCell(4);
                 cell5.textContent = incident.incident_type;
+
+                // Set the data attribute for the incident number
+                newRow.setAttribute('data-incident-number', incident.incident_number);
+                newRow.onclick = function () {
+                    // Get the incident number for this row
+                    let incidentNumber = this.getAttribute('data-incident-number');
+
+                    // Open a new window/tab with the incident details
+                    // Replace '/incident-details' with the path to the server-side script
+                    // that will display the incident details.
+                    
+                    // Open a new window/tab with the incident details
+                    window.open(`/incident-details/${incident._id}`, '_blank');
+                };
+                // Style the row cursor as pointer to indicate it's clickable
+                newRow.style.cursor = 'pointer';
+
+
+                
+
+                // Adjust the row click event to open the incident details
+                newRow.onclick = function () {
+                    let incidentNumber = this.getAttribute('data-incident-number');
+                    window.open(`/incident-details/${incident._id}`, '_blank');
+                };
             });
         }
+
+
+        function deleteSelectedIncidents() {
+            let selectedCheckboxes = document.querySelectorAll('.recordCheckbox:checked');
+            if (selectedCheckboxes.length === 0) {
+                alert('No incidents selected for deletion.');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to delete the selected incidents?')) {
+                return;
+            }
+
+            let idsToDelete = Array.from(selectedCheckboxes).map(checkbox => checkbox.value);
+
+            // Send a request to your server to delete the incidents.
+            // You will need an endpoint on your server that can handle this request.
+            fetch('/delete-incidents', {  // assuming '/delete-incidents' is your API endpoint for deletion
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ ids: idsToDelete })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Server error: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert('Selected incidents have been deleted.');
+                    // Here, you might want to remove the deleted rows from the table or refresh the table content
+                    performSearch();  // If this function fetches your updated data
+                })
+                .catch(error => {
+                    console.error('Deletion failed:', error);
+                });
+
+
+
+        }
+
 
         // Event listener for the search button
         document.addEventListener('DOMContentLoaded', function () {
             document.getElementById("newSearchButton").addEventListener("click", performSearch);
+
+            //for opening new window and displaying incident data and tasks
+            let rows = document.getElementById('incidentTable').getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+            // Add the onclick function for each row in the table
+            for (let i = 0; i < rows.length; i++) {
+                rows[i].onclick = function () {
+                    // Get the incident number for this row. This assumes that 'data-incident-number' is an attribute in each row.
+                    let incidentNumber = this.getAttribute('data-incident-number');
+
+                    // Redirect to the new incident details page with the incident ID
+                    window.location.href = `/incident-details/${incidentNumber}`; // This line changed
+                };
+            }
+
+
+
+            const selectAllCheckbox = document.getElementById('selectAllCheckboxes');
+            selectAllCheckbox.addEventListener('change', function () {
+                let recordCheckboxes = document.querySelectorAll('.recordCheckbox');
+                for (let checkbox of recordCheckboxes) {
+                    checkbox.checked = this.checked;
+                }
+            });
+
         });
+
+
+
+
 
     </script>
 

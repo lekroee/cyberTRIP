@@ -37,11 +37,11 @@
 
     <h2>Incident Table</h2>
 
-    <!-- Somewhere in the body, probably above the table -->
+    
     <div id="searchContainer">
         <input type="text" id="newSearchInput" placeholder="Enter search query">
         <button id="newSearchButton">Search</button>
-        <!-- Place somewhere in your HTML where appropriate -->
+        
         <button onclick="deleteSelectedIncidents()">Delete Selected Incidents</button>
 
     </div>
@@ -144,7 +144,7 @@
                 checkboxCell.appendChild(checkbox);
 
                 // Assuming the object structure is similar to the rows
-                // you have initially in your HTML (modify as needed)
+                // that are initially in the HTML (modify as needed)
                 let cell1 = newRow.insertCell(1);
                 cell1.textContent = incident.incident_number;
 
@@ -198,9 +198,9 @@
 
             let idsToDelete = Array.from(selectedCheckboxes).map(checkbox => checkbox.value);
 
-            // Send a request to your server to delete the incidents.
-            // You will need an endpoint on your server that can handle this request.
-            fetch('/delete-incidents', {  // assuming '/delete-incidents' is your API endpoint for deletion
+            // Send a request to the server to delete the incidents.
+            // need an endpoint on the server that can handle this request.
+            fetch('/delete-incidents', {  // assuming '/delete-incidents' is the API endpoint for deletion
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -215,8 +215,8 @@
                 })
                 .then(data => {
                     alert('Selected incidents have been deleted.');
-                    // Here, you might want to remove the deleted rows from the table or refresh the table content
-                    performSearch();  // If this function fetches your updated data
+                    // Here, might want to remove the deleted rows from the table or refresh the table content
+                    performSearch();  // If this function fetches the updated data
                 })
                 .catch(error => {
                     console.error('Deletion failed:', error);

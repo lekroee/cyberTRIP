@@ -1,34 +1,26 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for
+
 from pymongo import MongoClient
 import csv
 import os
 from flask_bcrypt import Bcrypt
-from datetime import datetime
-from bson import json_util
-from flask import flash
+
 from datetime import datetime, timedelta
 import hashlib
 import requests
-from flask import session# for login sessions
 import logging
-from flask import Flask
+
 from datetime import timedelta
-from bson import ObjectId
-from flask import request, jsonify
-from bson import ObjectId
+from bson import ObjectId, json_util
+
 import traceback
-from flask import Flask, render_template, request, jsonify, make_response
-from flask import Flask, render_template, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from flask import Flask, render_template, request, jsonify, make_response, flash, redirect, url_for, session
+
 
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
 app.config['SECRET_KEY'] = 'your_secret_key'
-
-
 
 
 # Session security settings, this keeps info in cookies safe
@@ -67,7 +59,7 @@ def get_environment_variable(key):
 
 
 
-#this is to get the database search working with serializable
+#this is to get the database object search working with serializable
 from flask import Flask, jsonify
 from bson import ObjectId
 import json  # Import the standard library's json
@@ -90,8 +82,8 @@ client = MongoClient("mongodb://localhost:27017/")
 
 
 
-db = client["incident_db"]#database name
-users_collection = db["users"]#for login info users
+db = client["incident_db"]#database name that stores incidents
+users_collection = db["users"]#for login info users in database for incidents
 
 
 
@@ -173,7 +165,7 @@ def create_user():
         password = bcrypt.generate_password_hash(request.form.get("password")).decode('utf-8')
         user_type = request.form.get("user_type")
         
-        #Chris added the passkey verification here
+        #Chris added the passkey verification here when create an initial account.
         entered_passkey = request.form.get("passkey")
         # salt to add to encrypted key
         salt = "ravisethi"
@@ -311,7 +303,7 @@ def submit_data():
 
     return redirect(url_for('index'))#basically reload the page on client so they see updated submitted data
 
-
+# for adding a task to a specific incident id
 @app.route('/add-task/<incident_id>', methods=['POST'])
 def add_task(incident_id):
     try:
@@ -452,7 +444,7 @@ def urlscan():
         return jsonify({"error": f"Error scanning URL! Response: {response.text}"}), 400
 
 
-
+    # I might need to add tasks to this
 @app.route("/search-database", methods=["POST"])
 def search_database():
      try:
@@ -503,19 +495,19 @@ def incident_details(incident_id):
         # If conversion fails, return an error (bad request)
         return make_response("Invalid incident ID format", 400)
 
-    # Fetch the incident from your database using the incident_id
+    # Fetch the incident from database using the incident_id
     incident = collection.find_one({'_id': obj_id})
 
     if incident:
         # Render the HTML template and provide the incident data
         return render_template('incident_details.html', incident=incident)
     else:
-        # If no incident is found, you might want to redirect to a 404 page or similar
+        # If no incident is found, might want to redirect to a 404 page or similar
         return make_response("Incident not found", 404)
     
 def incident_report_page(incident_id):
-    # Assuming you have an 'incident_details.html' file in a 'templates' folder
-    # This will serve the HTML file when you navigate to '/incident-report/<incident_id>'
+    # Assuming ther's an 'incident_details.html' file in a 'templates' folder
+    # This will serve the HTML file when navigating to '/incident-report/<incident_id>'
     return render_template('incident_details.html', incident_id=incident_id)
 
 

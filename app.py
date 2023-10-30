@@ -1,23 +1,19 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for
+
 from pymongo import MongoClient
 import csv
 import os
 from flask_bcrypt import Bcrypt
-from datetime import datetime
-from bson import json_util
-from flask import flash
+
 from datetime import datetime, timedelta
 import hashlib
 import requests
-from flask import session# for login sessions
 import logging
-from flask import Flask
-from datetime import timedelta
-from bson import ObjectId
-from flask import request, jsonify
-from bson import ObjectId
-import traceback
 
+from datetime import timedelta
+from bson import ObjectId, json_util
+
+import traceback
+from flask import Flask, render_template, request, jsonify, make_response, flash, redirect, url_for, session
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -34,8 +30,15 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=1)  # Sessions last fo
 
 bcrypt = Bcrypt(app)#this is for encrypting login information with mongo
 
+
 # This global variable stores the timestamp of the last failed attempt and the number of failed attempts in the create user route.
 cooldown_info = {"last_attempt": None, "failed_attempts": 0}
+
+
+
+
+
+
 
 #I'm having trouble getting this to work correctly, until then, I'm using the json to store the api key
 def get_environment_variable(key):
@@ -54,7 +57,7 @@ def get_environment_variable(key):
 
 
 
-#this is to get the database search working with serializable
+#this is to get the database object search working with serializable
 from flask import Flask, jsonify
 from bson import ObjectId
 import json  # Import the standard library's json
@@ -77,6 +80,11 @@ client = MongoClient("mongodb://localhost:27017/")
 
 db = client["incident_db"]#database name
 users_collection = db["users"]#for login info users
+
+db = client["incident_db"]#database name that stores incidents
+users_collection = db["users"]#for login info users in database for incidents
+
+
 # Check if admin exists in users collection
 admin_exists = users_collection.find_one({"username": "admin"})
 #if not, create one first time
@@ -86,6 +94,7 @@ if not admin_exists:
     
 
 collection = db["incidents"]#collection name
+incidents_collection =db["incidents"]
 
 data_list = []# for posting data to the bottom when submit button pressed
 
@@ -152,7 +161,7 @@ def create_user():
         password = bcrypt.generate_password_hash(request.form.get("password")).decode('utf-8')
         user_type = request.form.get("user_type")
         
-        #Chris added the passkey verification here
+        #Chris added the passkey verification here when create an initial account.
         entered_passkey = request.form.get("passkey")
         # salt to add to encrypted key
         salt = "ravisethi"
@@ -189,6 +198,9 @@ def homepage():
 
 @app.route("/create-incident", methods=["GET"])
 def create_incident():
+    if "username" not in session:
+        return redirect(url_for("login"))
+    
     # Get incidents from the database
     incidents = db.incidents.find()
     print('Session data at /create-incident:', session.items())
@@ -261,7 +273,8 @@ def submit_data():
             "urls": request.form["urls"],
             "notes": request.form["notes"],
             "emails_sent": request.form["emails_sent"],
-            "replies": request.form["replies"]
+            "replies": request.form["replies"],
+            "tasks": [] 
         }
 
         # Insert data directly into the MongoDB collection
@@ -297,6 +310,53 @@ def submit_data():
     data_list.append(data)
 
     return redirect(url_for('index'))#basically reload the page on client so they see updated submitted data
+
+# for adding a task to a specific incident id
+@app.route('/add-task/<incident_id>', methods=['POST'])
+def add_task(incident_id):
+    try:
+        # Convert the incident_id from a string to an ObjectId
+        obj_id = ObjectId(incident_id)
+    except:
+        return make_response("Invalid incident ID format", 400)
+
+    # Extract task details from the form
+    status = request.form.get('status')
+    assigned_to = request.form.get('assigned_to')
+    priority = request.form.get('priority')
+    task_notes = request.form.get('task_notes')
+
+     # Find the incident to which the task will be added
+    incident = collection.find_one({'_id': obj_id}, {"tasks": 1})  # retrieve only the 'tasks' field
+
+    if not incident:
+        return make_response("Incident not found", 404)
+
+    # Calculate the new task number (length of current tasks + 1)
+    current_tasks = incident.get('tasks', [])
+    new_task_number = len(current_tasks) + 1
+
+    # Create the new task
+    new_task = {
+        "task_number": new_task_number,
+        "status": status,
+        "assigned_to": assigned_to,
+        "priority": priority,
+        "task_notes": task_notes,
+    }
+
+    # Add the new task to the incident's list of tasks
+    update_result = collection.update_one(
+        {'_id': obj_id},
+        {'$push': {'tasks': new_task}}
+    )
+
+    if update_result.modified_count == 0:
+        return make_response("Incident not found or update failed", 404)
+
+    # Redirect to the incident details page or wherever appropriate
+    return redirect(url_for('incident_details', incident_id=incident_id))
+
 
 
 #store data that's display on the bottom of the page in mongo database
@@ -401,7 +461,7 @@ def urlscan():
         return jsonify({"error": f"Error scanning URL! Response: {response.text}"}), 400
 
 
-
+    # I might need to add tasks to this
 @app.route("/search-database", methods=["POST"])
 def search_database():
      try:
@@ -438,6 +498,30 @@ def search_database():
         response = jsonify(error=str(e))
         response.status_code = 500
         return response
+
+@app.route('/incident-details/<incident_id>')
+def incident_details(incident_id):
+    try:
+        # Convert the incident_id from a string to an ObjectId
+        obj_id = ObjectId(incident_id)
+    except:
+        # If conversion fails, return an error (bad request)
+        return make_response("Invalid incident ID format", 400)
+
+    # Fetch the incident from database using the incident_id
+    incident = collection.find_one({'_id': obj_id})
+
+    if incident:
+        # Render the HTML template and provide the incident data
+        return render_template('incident_details.html', incident=incident)
+    else:
+        # If no incident is found, might want to redirect to a 404 page or similar
+        return make_response("Incident not found", 404)
+    
+def incident_report_page(incident_id):
+    # Assuming ther's an 'incident_details.html' file in a 'templates' folder
+    # This will serve the HTML file when navigating to '/incident-report/<incident_id>'
+    return render_template('incident_details.html', incident_id=incident_id)
 
 
 @app.route("/delete-incidents", methods=["POST"])

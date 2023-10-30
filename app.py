@@ -296,7 +296,7 @@ def submit_data():
         return redirect(url_for('index'))  # This would typically redirect back to the form submission page
 
     data = {
-        "incident_number": incident_number,
+        "incident_number": +incident_number,
 	    "severity": request.form["severity"],  # Adding severity
         "date": request.form["date"].strftime('%Y-%m-%d'),
         "analyst_name": analyst_name,

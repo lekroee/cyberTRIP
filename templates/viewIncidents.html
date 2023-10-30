@@ -8,8 +8,7 @@
     <link rel="stylesheet" type="text/css" href="static/css/view_incidents.css">
 
     <link rel="stylesheet" type="text/css" href="css/main.css">
-    <style>
-
+    <!-- <style>
 
         table {
             border-collapse: collapse;
@@ -31,7 +30,7 @@
         th:hover {
             background-color: #ddd;
         }
-    </style>
+    </style> -->
 
 </head>
 
@@ -47,32 +46,19 @@
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="Search Database">
             <button id="searchButton">Search Database</button>
+            <button onclick="deleteSelectedIncidents()">Delete Selected Incidents</button>
         </div>
 
         <h2>Incident Table</h2>
 
-        <!-- Display data here below everything. headings first-->
-        <table id="incidentTable">
-            <thead>
-                <tr>
-                <th onclick="sortTable(0)">Incident Number</th>
-                <th onclick="sortTable(1)">Severity</th>
-                <th onclick="sortTable(2)">Date</th>
-                <th onclick="sortTable(3)">Analyst Name</th>
-
-    <button id="back_button" onclick="location.href='/dashboard'">Back To Dashboard</button>
-
-    <h2>Incident Table</h2>
-
     
-    <div id="searchContainer">
+    <!-- <div id="searchContainer">
         <input type="text" id="newSearchInput" placeholder="Enter search query">
         <button id="newSearchButton">Search</button>
         
         <button onclick="deleteSelectedIncidents()">Delete Selected Incidents</button>
 
-    </div>
-
+    </div> -->
 
     <table id="incidentTable">
         <thead>
@@ -121,6 +107,8 @@
                 sessionStorage.setItem('hasLoaded', true);
             }
         });
+
+        
 
         /**
          * Sorts the rows of a table based on the content of the specified column.

@@ -265,8 +265,16 @@
             e.preventDefault();
             const url = e.currentTarget.getAttribute('data-url');
 
+            // Scroll to the top of the page when a URL is clicked.
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
             // Scroll to the URL scan section when a URL is clicked.
-            document.getElementById('urlscanResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            document.getElementById('url').value = url;
+
+
+            // Simulate a click on the urlscanButton
+            document.getElementById('urlscanButton').click();
+        
 
             // Send the URL for scanning.
             fetch(`/urlscan?url=${url}`)
@@ -323,31 +331,12 @@
                 cell.innerHTML = cell.textContent.replace(urlRegex, '<a href="$1" class="urlscan-link">$1</a>');
             });
 
-            // Add a click event listener to each link
-            document.querySelectorAll('.urlscan-link').forEach(link => {
-                link.addEventListener('click', function (e) {
-                    e.preventDefault();  // Prevent the default click behavior
-                    let url = e.target.href;
 
-                    // Fetch the URL scan results
-                    fetch(`/urlscan?url=${url}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            // Display the results in the 'resultLinkContainer'
-                            document.getElementById("urlscanResult").innerText = JSON.stringify(data, null, 2);
-
-                            // Display a clickable link if there's a 'result' property in the returned data
-                            if (data.result) {
-                                let linkContainer = document.getElementById("resultLinkContainer");
-                                linkContainer.innerHTML = `<a href="${data.result}" target="_blank">View Scan Result</a>`;
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Error:", error);
-                            document.getElementById("urlscanResult").innerText = "Error fetching data!";
-                        });
-                });
+            document.querySelectorAll('.url-link').forEach(link => {
+                link.addEventListener('click', handleUrlClick);
             });
+
+           
 
 
             const deleteRecordButton = document.getElementById("deleteRecordButton");
@@ -370,6 +359,7 @@
             // This could be placed inside a 'DOMContentLoaded' event listener or in a script at the end of the body tag.
             document.getElementById("urlscanButton").addEventListener("click", performUrlScan);
 
+            applyUrlLinkEventListeners();
         }
 
         async function deleteRecords(idsToDelete) {
@@ -617,8 +607,10 @@
 
                 // After building the row, reapply the click event listener to the new .url-link elements
                 // This function should be the same as the one used to apply the handler after the initial page load
-                applyUrlClickHandler();  //  add click listeners to the elements with class "url-link".
+               // applyUrlClickHandler();  //  add click listeners to the elements with class "url-link".
+
             });
+            applyUrlLinkEventListeners();
         }
 
         function performUrlScan() {
@@ -690,6 +682,14 @@
 
 
         });
+
+
+        // This function applies the event listener to all elements with the url-link class.
+        function applyUrlLinkEventListeners() {
+            document.querySelectorAll('.url-link').forEach(link => {
+                link.addEventListener('click', handleUrlClick);
+            });
+        }
 
     </script>
 

@@ -1,0 +1,58 @@
+body {
+    margin: 0px;
+    padding: 0px;
+}
+
+#header {
+    margin-top: 0px;
+    margin-bottom: 5vh;
+    background-color: rgb(97, 211, 242);
+    height: 22vh;
+    width: 100%;
+    font-family: 'Courier New', Courier, monospace;
+    border: 1px solid black;
+}
+
+#logo {
+    margin-top: 0px;
+    width: 50vw;
+    padding-left: 20px;
+    padding-top: 8vh;
+    font-size: 60px;
+    display: inline-block;
+}
+
+#subtitle {
+    text-align: center;
+}
+
+#navigation {
+
+    text-align: center;
+    margin-right:30vw;
+    margin-left:30vw;
+    padding: 20px;
+
+    box-shadow: 5px 5px 7px #666;
+    border-radius: 25px;
+    background-color: rgb(97, 211, 242);
+}
+
+.buttons {
+    margin-bottom: 20px;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 15px;
+    padding: 10px;
+
+    box-shadow: 3px 3px 5px #666;
+    border-radius: 15px;
+}
+
+#logout_button {
+    box-shadow: 3px 3px 5px #666;
+    border-radius: 15px;
+    font-size: 15px;
+    float: right;
+    margin-right: 2vw;
+    margin-top: 2vh;
+}

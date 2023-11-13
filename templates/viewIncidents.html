@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Incidents</title>
     <link rel="stylesheet" type="text/css" href="static/css/view_incidents.css">
-    <link rel="stylesheet" type="text/css" href="css/main.css">
-
-
+    
     <!--<style>
 
 
@@ -56,13 +54,13 @@
                 <tr>
                     <th><input type="checkbox" id="selectAllCheckboxes"></th> <!-- This checkbox will select/deselect all -->
     <th onclick="sortTable(1)">Incident Number</th>
-    <th onclick="sortTable(2)">Severity</th>
+    <th onclick="sortTable(2, true)">Severity</th>
     <th onclick="sortTable(3)">Date</th>
     <th onclick="sortTable(4)">Incident Type</th>
     </tr>
     </thead>
     <tbody>
-        <tr>
+        <!-- tr>
             <td>INC001</td>
             <td>High</td>
             <td>2023-10-15</td>
@@ -76,20 +74,36 @@
             <td>Jane Smith</td>
             <td>DDoS</td>
         </tr>
-        <!-- Add more rows as needed -->
+        Add more rows as needed -->
     </tbody>
     </table>
 
     <script>
-        function sortTable(columnIndex) {
+        function sortTable(columnIndex, severityColumn=false) {
             const table = document.getElementById("incidentTable");
             const rows = Array.from(table.rows).slice(1); // Exclude the header row
+
+            // Check if sortOrder variable exists in the function scope
+            if (typeof sortTable.sortOrder === 'undefined') {
+                // If not, initialize it with 'asc'
+                sortTable.sortOrder = 'asc';
+            } else {
+                // If it exists, toggle between 'asc' and 'desc'
+                sortTable.sortOrder = sortTable.sortOrder === 'asc' ? 'desc' : 'asc';
+            }
+
+            const severityOrder = { 'low': 1, 'medium': 2, 'high': 3, 'severe': 4, 'emergency': 5 };
 
             rows.sort((a, b) => {
                 const aValue = a.cells[columnIndex].textContent.trim();
                 const bValue = b.cells[columnIndex].textContent.trim();
+                
+                const aNumericValue = severityColumn ? severityOrder[aValue] || 0 : aValue;
+                const bNumericValue = severityColumn ? severityOrder[bValue] || 0 : bValue;
 
-                return isNaN(aValue) ? aValue.localeCompare(bValue) : aValue - bValue;
+                const comparison = isNaN(aNumericValue) ? aNumericValue.localeCompare(bNumericValue) : aNumericValue - bNumericValue;
+
+                return sortTable.sortOrder === 'asc' ? comparison : -comparison;
             });
 
             // Clear the table body
@@ -99,6 +113,7 @@
             // Append sorted rows
             rows.forEach(row => tbody.appendChild(row));
         }
+
     </script>
 
     <script>

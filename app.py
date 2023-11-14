@@ -267,9 +267,16 @@ def submit_data():
     
       
     try:
+        # -------------------- Changed On November 14th --------------------------------------------
+        latest_ticket = db.tickets.find_one(sort=[("ticket_number", -1)]) # Look for the last ticket number created
+        new_ticket_number = latest_ticket["ticket_number"] + 1 if latest_ticket else 1
+
+        # ------------------------------------------------------------------------------------------
+
         # Assuming form data is correct, construct the data dictionary
+        # to get number from the form: sanitize_input(request.form["incident_number"])
         data = {
-            "incident_number": sanitize_input(request.form["incident_number"]),
+            "incident_number": new_ticket_number,
             "severity": request.form["severity"],
             "date": datetime.strptime(request.form["date"], '%Y-%m-%d'),  # validate and convert date
             "analyst_name": sanitize_input(request.form["analyst_name"]),

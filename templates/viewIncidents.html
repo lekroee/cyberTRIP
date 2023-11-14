@@ -97,7 +97,7 @@
             rows.sort((a, b) => {
                 const aValue = a.cells[columnIndex].textContent.trim();
                 const bValue = b.cells[columnIndex].textContent.trim();
-                
+
                 const aNumericValue = severityColumn ? severityOrder[aValue] || 0 : aValue;
                 const bNumericValue = severityColumn ? severityOrder[bValue] || 0 : bValue;
 
@@ -193,8 +193,6 @@
                 newRow.style.cursor = 'pointer';
 
 
-
-
                 // Adjust the row click event to open the incident details
                 newRow.onclick = function () {
                     let incidentNumber = this.getAttribute('data-incident-number');
@@ -240,9 +238,6 @@
                 .catch(error => {
                     console.error('Deletion failed:', error);
                 });
-
-
-
         }
 
 
@@ -276,10 +271,7 @@
 
         });
 
-
-
-
-
+        performSearch(); // Call this function once to load all database results on page load
     </script>
 
 

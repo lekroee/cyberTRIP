@@ -258,9 +258,12 @@ def submit_data():
     # Validate the date
     date_str = request.form["date"]
     try:
-        valid_date = datetime.strptime(date_str, '%m-%d-%Y')  # assuming format is MM-DD-YYYY
+        # valid_date = datetime.strptime(date_str, '%m-%d-%Y')  # assuming format is MM-DD-YYYY
+
+        # Changed on 11/13
+        valid_date = datetime.strptime(date_str, '%Y-%m-%d')  # Date input returns in YYYY-MM-DD format
     except ValueError:
-        return "Invalid date format. Expected MM-DD-YYYY.", 400
+        return "Invalid date format. Expected YYYY-MM-DD.", 400
     
       
     try:
@@ -268,7 +271,7 @@ def submit_data():
         data = {
             "incident_number": sanitize_input(request.form["incident_number"]),
             "severity": request.form["severity"],
-            "date": datetime.strptime(request.form["date"], '%m-%d-%Y'),  # validate and convert date
+            "date": datetime.strptime(request.form["date"], '%Y-%m-%d'),  # validate and convert date
             "analyst_name": sanitize_input(request.form["analyst_name"]),
             "incident_type": request.form["incident_type"],
             "email_address": request.form["email_address"],

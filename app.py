@@ -14,6 +14,16 @@ from bson import ObjectId, json_util
 
 import traceback
 from flask import Flask, render_template, request, jsonify, make_response, flash, redirect, url_for, session
+from functools import wraps
+
+# decorator to verify that user is logged in before displaying a page.
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'username' not in session:
+            return redirect(url_for('login', next=request.url))
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 
@@ -141,11 +151,14 @@ def logout():
         data_list.clear()
 
     session.clear()  # Clear the session to log the user out
-    return redirect(url_for("login"))
+
+    # Return a JSON response
+    return jsonify({"success": True, "redirect": url_for("login")})
 
 
 
 @app.route("/create-user", methods=["GET", "POST"])
+@login_required
 def create_user():
     # if session.get("user_type") != "superuser":
         # return "Access denied", 403
@@ -197,10 +210,12 @@ def create_user():
 # --------------------------- ADDED Oct. 18th ---------------------------
 # added to display homepage
 @app.route("/homepage", methods=["GET"])
+@login_required
 def homepage():
     return render_template("homepage.html")
 
 @app.route("/create-incident", methods=["GET"])
+@login_required
 def create_incident():
     if "username" not in session:
         return redirect(url_for("login"))
@@ -213,32 +228,39 @@ def create_incident():
 
 # added to link to view incidents page
 @app.route("/view-incidents", methods=["GET"])
+@login_required
 def view_incidents():
     return render_template("viewIncidents.html")
 
 
 # added to link to view statistics page
 @app.route("/view-stats", methods=["GET"])
+@login_required
 def view_stats():
     return render_template("stats.html")
 
 
 # added to display homepage
 @app.route("/dashboard", methods=["GET"])
+@login_required
 def dashboard():
-    return render_template("dashboard.html")
+    username = session.get("username", "Guest") #default to guest, but this shouldn't happen
+    user_type = session.get("user_type", "analyst")  # Default to 'analyst' if no user type
+    return render_template("dashboard.html", username=username, user_type=user_type)
 
 # ------------------------------------------------------------------------
 
 # EDITED Oct. 18th
 #for loading index, it displays any data in data list at the bottom when loaded
 @app.route("/")
+@login_required
 
 def start():
     return render_template("homepage.html")
 
 # EDITED Oct. 18th
 @app.route("/index")
+@login_required
 def index():
     logging.debug('Session data: %s', session.items())
     print('Session data at /index:', session.items())  # Print directly to the console
@@ -250,6 +272,7 @@ def index():
 
 #submit button that will post (display at bottom) the incident data that was entered in all the text boxes
 @app.route("/submit", methods=["POST"])
+@login_required
 def submit_data():
     print('Session data at /submit:', session.items())
     if "username" not in session:
@@ -315,6 +338,7 @@ def submit_data():
 
 # for adding a task to a specific incident id
 @app.route('/add-task/<incident_id>', methods=['POST'])
+@login_required
 def add_task(incident_id):
     try:
         # Convert the incident_id from a string to an ObjectId
@@ -363,6 +387,7 @@ def add_task(incident_id):
 
 #store data that's display on the bottom of the page in mongo database
 @app.route("/export-to-mongo", methods=["GET"])
+@login_required
 def export_to_mongo():
     if "username" not in session:
         return redirect(url_for("login"))
@@ -375,6 +400,7 @@ def export_to_mongo():
 
 #load data 
 @app.route("/load-from-mongo", methods=["GET"])
+@login_required
 def load_from_mongo():
     if "username" not in session:
         return redirect(url_for("login"))
@@ -389,6 +415,7 @@ def load_from_mongo():
 
 #When this button is pressed, get all the keys in a list structure and write to csv, then append data in each column
 @app.route("/export-to-csv", methods=["GET"])
+@login_required
 def export_to_csv():
     if "username" not in session:
         return redirect(url_for("login"))
@@ -405,6 +432,7 @@ def export_to_csv():
 
 #this just clears the bottom of the screen data and reloads
 @app.route("/clear-data", methods=["GET"])
+@login_required
 def clear_data():
     if "username" not in session:
         return redirect(url_for("login"))
@@ -419,6 +447,7 @@ apis for external malware tools below
 
 #urlscan api - description is on their website - at the moment it's getting the key from config.json, I can't get it from the environment variable correctly atm
 @app.route("/urlscan", methods=["GET"])
+@login_required
 def urlscan():
     if "username" not in session:
         return redirect(url_for("login"))
@@ -456,6 +485,7 @@ def urlscan():
 
     # I might need to add tasks to this
 @app.route("/search-database", methods=["POST"])
+@login_required
 def search_database():
      try:
         query = request.form.get("query")
@@ -497,6 +527,7 @@ def search_database():
 
 
 @app.route('/incident-details/<incident_id>')
+@login_required
 def incident_details(incident_id):
     try:
         # Convert the incident_id from a string to an ObjectId
@@ -524,6 +555,7 @@ def incident_report_page(incident_id):
 
 
 @app.route("/delete-incidents", methods=["POST"])
+@login_required
 def delete_incidents():
     try:
         if request.is_json:

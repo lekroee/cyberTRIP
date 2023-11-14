@@ -3,6 +3,16 @@ body {
     padding: 0px;
 }
 
+#user_info {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #f8f9fa;
+    padding: 10px;
+    z-index: 1000;
+}
+
 #header {
     margin-top: 0px;
     margin-bottom: 5vh;

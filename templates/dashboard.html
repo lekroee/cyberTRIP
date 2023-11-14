@@ -8,7 +8,16 @@
 
     <div id="header">
         <h1 id="logo"> CyberTRIP </h1>
-        <button id="logout_button" onclick="location.href='/logout'">Logout</button>
+        <form id="logoutForm" method="POST" style="display: none;">
+            <input type="hidden" name="save_data" value="no" />
+        </form>
+
+        <button id="logout_button">Logout</button>
+        
+    </div>
+
+    <div id="user_info">
+        Logged in as: {{ username }} ({{ user_type }})
     </div>
 
     <h1 id="subtitle"> Dashboard </h1>
@@ -24,8 +33,47 @@
         <div>
             <button class="buttons" onclick="location.href='/view-stats'">View Statistics</button>
         </div>
-        
+
     </div>
-    
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const logout_button = document.getElementById("logout_button");
+            const logoutForm = document.getElementById("logoutForm");
+
+            logout_button.addEventListener("click", function (event) {
+                event.preventDefault(); // Prevent the default form submission
+
+                let saveData = confirm("Would you like to save the current table data to the database?");
+                fetch("/logout", {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `save_data=${saveData ? "yes" : "no"}` //now sure we need this on the dashboard right now
+                })
+                    .then(response => response.json())  // Expecting a JSON response now
+                    .then(data => {
+                        if (data.success) {
+                            // Redirect to the login page
+                            window.location.href = data.redirect;
+                        } else {
+                            // Handle any unsuccessful logout attempts
+                            alert("Failed to log out. Please try again.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error during logout:", error);
+                        alert("An error occurred. Please try again.");
+                    });
+            });
+        });
+
+
+
+    </script>
+
 </body>
 </html>
+

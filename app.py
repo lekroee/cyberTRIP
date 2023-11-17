@@ -61,6 +61,7 @@ client = MongoClient(mongo_uri)
 try:
     secret_key = os.environ['SECRET_KEY']
     mongo_uri = os.environ['MONGO_URI']
+    api_key_url = os.environ['API_KEY_URL']
 except KeyError as e:
     print(f"Environment variable {e.args[0]} not set. Exiting.")
     sys.exit(1)
@@ -487,7 +488,7 @@ def urlscan():
 
     url = request.args.get('url')
    
-    
+    ''' 
     # Load the configuration file
     try:
         with open('config.json', 'r') as config_file:
@@ -496,7 +497,7 @@ def urlscan():
     except (FileNotFoundError, KeyError):
         # Handle the case where the file is missing or the key is not present
         return jsonify({"error": "Configuration for API key is missing."}), 500
-
+    '''
 
     headers = {
         "Content-Type": "application/json",#get json data

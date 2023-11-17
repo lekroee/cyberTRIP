@@ -2,12 +2,17 @@
 from pymongo import MongoClient
 import csv
 import os
+import sys
 from flask_bcrypt import Bcrypt
 
 from datetime import datetime, timedelta
 import hashlib
 import requests
 import logging
+
+from flask import Flask, jsonify
+from bson import ObjectId
+import json  # Import the standard library's json
 
 from datetime import timedelta
 from bson import ObjectId, json_util
@@ -29,8 +34,41 @@ def login_required(f):
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.DEBUG)
+'''
+# Load configuration from config.json
+try:
+    with open('config.json') as config_file:
+        config = json.load(config_file)
+        
+# Ensure that both SECRET_KEY and MONGO_URI are present in the config
+        if 'SECRET_KEY' not in config or 'MONGO_URI' not in config:
+            print("Missing required keys in config.json. Exiting.")
+            sys.exit(1)
+            
+        app.config['SECRET_KEY'] = config.get('SECRET_KEY', 'default_secret_key')
+        mongo_uri = config.get('MONGO_URI')
+except FileNotFoundError:
+    print("config.json file not found. Exiting.")
+    sys.exit(1)
+    
+    
 
-app.config['SECRET_KEY'] = 'your_secret_key'
+# Setup MongoDB connection, this must obviously be running already on localhost for this implementation, but I can change later
+client = MongoClient(mongo_uri)
+'''
+
+# Load SECRET_KEY and MONGO_URI from environment variables
+try:
+    secret_key = os.environ['SECRET_KEY']
+    mongo_uri = os.environ['MONGO_URI']
+except KeyError as e:
+    print(f"Environment variable {e.args[0]} not set. Exiting.")
+    sys.exit(1)
+
+app.config['SECRET_KEY'] = secret_key
+
+# Setup MongoDB connection
+client = MongoClient(mongo_uri)
 
 
 # Session security settings, this keeps info in cookies safe
@@ -70,9 +108,7 @@ def get_environment_variable(key):
 
 
 #this is to get the database object search working with serializable
-from flask import Flask, jsonify
-from bson import ObjectId
-import json  # Import the standard library's json
+
 
 class JSONEncoder(json.JSONEncoder):
     ''' extend json-encoder class'''
@@ -86,9 +122,6 @@ class JSONEncoder(json.JSONEncoder):
 
 app.json_encoder = JSONEncoder
 
-
-# Setup MongoDB connection, this must obviously be running already on localhost for this implementation, but I can change later
-client = MongoClient("mongodb://localhost:27017/")
 
 
 

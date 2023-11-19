@@ -4,13 +4,20 @@ body {
 }
 
 #user_info {
-    position: fixed;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #f8f9fa;
-    padding: 10px;
+    position: absolute;
+    top: 2vh;
+    right: 7%;
+    padding-top: 3px;
     z-index: 1000;
+
+    font-weight: bold;
+    font-size: 110%;
+
+    text-decoration: underline;
+}
+
+#user_info: hover {
+/*    Do nothing for now but show that its clickable if we add a profile page*/
 }
 
 #header {

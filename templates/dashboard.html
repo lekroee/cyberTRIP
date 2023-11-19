@@ -12,13 +12,15 @@
             <input type="hidden" name="save_data" value="no" />
         </form>
 
+        <div id="user_info">
+            <!-- Logged in as: {{ username }} ({{ user_type }}) -->
+            {{ username }}
+        </div>
         <button id="logout_button">Logout</button>
         
     </div>
 
-    <div id="user_info">
-        Logged in as: {{ username }} ({{ user_type }})
-    </div>
+
 
     <h1 id="subtitle"> Dashboard </h1>
 

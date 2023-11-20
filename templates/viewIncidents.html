@@ -120,7 +120,8 @@
         // ... (existing script content)
 
         function performSearch() {
-            var query = document.getElementById("searchInput").value;
+            var searchBox = document.getElementById("searchInput")
+            var query = searchBox.value;
 
             fetch("/search-database", {
                 method: "POST",
@@ -131,7 +132,16 @@
             })
                 .then(response => response.json())
                 .then(data => {
-                    populateTableWithResults(data);
+                    if (data.length > 0) {
+                        searchBox.classList.remove("error")
+                        searchBox.placeholder = "search database"
+                        
+                        populateTableWithResults(data);
+                    } else {
+                        searchBox.classList.add("error")
+                        searchBox.placeholder = "No results found"
+                        searchBox.value = ""
+                    }
                 })
                 .catch(error => {
                     console.error('Search failed:', error);

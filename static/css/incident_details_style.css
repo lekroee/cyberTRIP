@@ -56,6 +56,15 @@ body {
     margin-top: 2vh;
 }
 
+#urlScanDiv {
+    border: 1px solid black; 
+    padding: 10px; 
+    margin-bottom: 20px;
+
+    box-sizing: border-box;
+}
+
+
 /* Additional styles for incident_details.html */
 
 /* Enhanced table styles */
@@ -105,6 +114,10 @@ label {
     display: block;
     margin-bottom: 5px;
     font-weight: bold;
+}
+
+input, textarea {
+     box-sizing: border-box;
 }
 
 input[type="text"], textarea, select {

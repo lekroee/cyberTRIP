@@ -30,23 +30,26 @@
         <h2>Incident Details</h2>
 
 
-        <table>
+        <table id="details-table">
             <tr>
                 <th>Field</th>
                 <th>Value</th>
             </tr>
             <!-- Iterate over the incident data and create a table row for each key-value pair -->
-            {% for key, value in incident.items() %}
-            <tr>
-                <td>{{ key }}</td>
-                {% if key == 'tasks' %}
-                    <!-- Display the number of tasks if the key is 'tasks' -->
-                    <td>{{ value|length }}</td>
-                {% else %}
-                    <!-- Check if the value is a URL and add a specific class -->
-                    <td class="{{ 'url-field' if 'url' in key.lower() else '' }}">{{ value }}</td>
+            {% for key, value in incident.items() %} 
+                <!-- User doesnt need to see the id number -->
+                {% if key != '_id' %}
+                    <tr>
+                        <td>{{ key }}</td>
+                        {% if key == 'tasks' %}
+                            <!-- Display the number of tasks if the key is 'tasks' -->
+                            <td>{{ value|length }}</td>
+                        {% else %}
+                            <!-- Check if the value is a URL and add a specific class -->
+                            <td class="{{ 'url-field' if 'url' in key.lower() else '' }}">{{ value }}</td>
+                        {% endif %}
+                    </tr>
                 {% endif %}
-            </tr>
             {% endfor %}
         </table>
 

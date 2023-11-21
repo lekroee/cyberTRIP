@@ -59,17 +59,38 @@ body {
 /* Additional styles for incident_details.html */
 
 /* Enhanced table styles */
-table {
+th {
+    background-color: rgb(97, 211, 242);
+    color: white;
+    padding: 10px;
+    text-align: left;
+
     margin-bottom: 20px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-th, td {
-    padding: 12px 15px;
+td {
+    padding: 8px;
+}
+
+table {
+    margin: auto;
+    border-collapse: collapse;
+    width: 70%;
+
+    table-layout: auto;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+tr:nth-child(odd) {
+    background-color: #f2f2f2;
 }
 
 tr:nth-child(even) {
-    background-color: #f4f4f4;
+    background-color: #f8f8f8;
 }
 
 /* Form Improvements */

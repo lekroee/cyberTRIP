@@ -574,8 +574,10 @@ def incident_details(incident_id):
     incident = collection.find_one({'_id': obj_id})
 
     if incident:
+        task_keys = {'task_number': 'Task Number', 'status': 'Status', 'assigned_to': 'Assigned To', 'priority': 'Priority', 'task_notes': 'Task Notes'}
+
         # Render the HTML template and provide the incident data
-        return render_template('incident_details.html', incident=incident)
+        return render_template('incident_details.html', incident=incident, task_keys=task_keys)
     else:
         # If no incident is found, might want to redirect to a 404 page or similar
         return make_response("Incident not found", 404)

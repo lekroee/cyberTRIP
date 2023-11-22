@@ -15,110 +15,121 @@
         <!-- Any other header buttons or elements can be added here -->
     </div>
 
-    
-    <div id="navigation">
+    <section>
+        <div id="navigation">
 
-        <!-- URL Scan section -->
-        <div id="urlScanDiv">
-            <h2>URL Scan</h2>
-            <input type="text" id="url" placeholder="Enter URL">
-            <button class="buttons" id="urlscanButton" onclick="performUrlScan()">Scan URL</button>
-            <pre id="urlscanResult" style="background-color: #f8f8f8; padding: 10px;">Results will appear here.</pre>
-            <div id="resultLinkContainer"></div> <!-- Container for scan result link -->
+            <!-- URL Scan section -->
+            <div id="urlScanDiv">
+                <h2>URL Scan</h2>
+                <input type="text" id="url" placeholder="Enter URL">
+                <button class="buttons" id="urlscanButton" onclick="performUrlScan()">Scan URL</button>
+                <pre id="urlscanResult" style="background-color: #f8f8f8; padding: 10px;">Results will appear here.</pre>
+                <div id="resultLinkContainer"></div> <!-- Container for scan result link -->
+            </div>
+
+            <h2>Incident Details</h2>
+
+
+            <table id="details-table">
+                <tr>
+                    <th>Field</th>
+                    <th>Value</th>
+                </tr>
+                <!-- Iterate over the incident data and create a table row for each key-value pair -->
+                {% for key, value in incident.items() %} 
+                    <!-- User doesnt need to see the id number -->
+                    {% if key != '_id' %}
+                        <tr>
+                            <td>{{ key }}</td>
+                            {% if key == 'tasks' %}
+                                <!-- Display the number of tasks if the key is 'tasks' -->
+                                <td>{{ value|length }}</td>
+                            {% else %}
+                                <!-- Check if the value is a URL and add a specific class -->
+                                <td class="{{ 'url-field' if 'url' in key.lower() else '' }}">{{ value }}</td>
+                            {% endif %}
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            </table>
+
+            <h2>Tasks</h2>
+
+            <!-- Here we iterate over each task and create a new table for each one -->
+            {% if incident.tasks and incident.tasks|length > 0 %}
+            <!-- Here we iterate over each task within the incident's task list -->
+            {% for task in incident.tasks %}
+            <h3>Task Details</h3>
+
+            <table>
+                <tr>
+                    <th>Field</th>
+                    <th>Value</th>
+                </tr>
+                <!-- Now, iterate over the key-value pairs in the current task -->
+                {% for key, value in task.items() %}
+                <tr>
+                    <td>{{ task_keys[key] }}</td>
+                    <td>{{ value }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            <br> <!-- Add a space between tables -->
+            {% endfor %}
+            {% else %}
+            <p>No tasks available for this incident.</p>
+            {% endif %}
+
+
+            <!-- Existing incident details layout... -->
+
+            <h3>Add New Task</h3>
+            <form action="{{ url_for('add_task', incident_id=incident['_id']) }}" method="post">
+                <div>
+                    <label for="status">Status:</label>
+                    <select name="status" id="status">
+                        <option value="new">New</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="closed">Closed</option>
+                    </select><br>
+                </div>
+
+                <div>
+                    <label for="assigned_to">Assigned To:</label>
+                    <input type="text" id="assigned_to" name="assigned_to"><br>
+                </div>
+
+
+                <div>
+                    <label for="priority">Priority:</label>
+                    <select name="priority" id="priority">
+                        <option value="urgent">Urgent</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select><br>
+                </div>
+                <div>
+                    <label for="task_notes">Task Notes:</label>
+                    <textarea id="task_notes" name="task_notes"></textarea><br>
+                </div>
+
+                    <input type="submit" value="Add Task">
+            </form>
+
         </div>
 
-        <h2>Incident Details</h2>
-
-
-        <table id="details-table">
-            <tr>
-                <th>Field</th>
-                <th>Value</th>
-            </tr>
-            <!-- Iterate over the incident data and create a table row for each key-value pair -->
-            {% for key, value in incident.items() %} 
-                <!-- User doesnt need to see the id number -->
-                {% if key != '_id' %}
-                    <tr>
-                        <td>{{ key }}</td>
-                        {% if key == 'tasks' %}
-                            <!-- Display the number of tasks if the key is 'tasks' -->
-                            <td>{{ value|length }}</td>
-                        {% else %}
-                            <!-- Check if the value is a URL and add a specific class -->
-                            <td class="{{ 'url-field' if 'url' in key.lower() else '' }}">{{ value }}</td>
-                        {% endif %}
-                    </tr>
-                {% endif %}
-            {% endfor %}
-        </table>
-
-        <h2>Tasks</h2>
-
-        <!-- Here we iterate over each task and create a new table for each one -->
-        {% if incident.tasks and incident.tasks|length > 0 %}
-        <!-- Here we iterate over each task within the incident's task list -->
-        {% for task in incident.tasks %}
-        <h3>Task Details</h3>
-
-
-
-        <table>
-            <tr>
-                <th>Field</th>
-                <th>Value</th>
-            </tr>
-            <!-- Now, iterate over the key-value pairs in the current task -->
-            {% for key, value in task.items() %}
-            <tr>
-                <td>{{ key }}</td>
-                <td>{{ value }}</td>
-            </tr>
-            {% endfor %}
-        </table>
-        <br> <!-- Add a space between tables -->
-        {% endfor %}
-        {% else %}
-        <p>No tasks available for this incident.</p>
-        {% endif %}
-
-        <!-- Existing incident details layout... -->
-
-        <h3>Add New Task</h3>
-        <form action="{{ url_for('add_task', incident_id=incident['_id']) }}" method="post">
-            <div>
-                <label for="status">Status:</label>
-                <select name="status" id="status">
-                    <option value="new">New</option>
-                    <option value="in_progress">In Progress</option>
-                    <option value="closed">Closed</option>
-                </select><br>
-            </div>
-
-            <div>
-                <label for="assigned_to">Assigned To:</label>
-                <input type="text" id="assigned_to" name="assigned_to"><br>
+        <!-- <div id="incidentDetails" style="display: none">
+            <div id="statusBar">
+                <button>New</button>
+                <button>Open</button>
+                <button>Closed</button>
             </div>
 
 
-            <div>
-                <label for="priority">Priority:</label>
-                <select name="priority" id="priority">
-                    <option value="urgent">Urgent</option>
-                    <option value="high">High</option>
-                    <option value="medium">Medium</option>
-                    <option value="low">Low</option>
-                </select><br>
-            </div>
-            <div>
-                <label for="task_notes">Task Notes:</label>
-                <textarea id="task_notes" name="task_notes"></textarea><br>
-            </div>
-
-                <input type="submit" value="Add Task">
-        </form>
-
-    </div>
+        </div> -->
+    </section>
+    
 
         <!-- <script>
             document.addEventListener('DOMContentLoaded', function () {

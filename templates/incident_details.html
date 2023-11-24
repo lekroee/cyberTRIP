@@ -29,8 +29,6 @@
             </div>
 
             <h2>Incident Details</h2>
-
-
             <table id="details-table">
                 <tr>
                     <th>Field</th>
@@ -62,7 +60,7 @@
             {% for task in incident.tasks %}
             <h3>Task Details</h3>
 
-            <table>
+            <table id="task-table-{{ task.task_number }}">
                 <tr>
                     <th>Field</th>
                     <th>Value</th>
@@ -72,7 +70,7 @@
                 <tr>
                     <td>{{ task_keys[key] }}</td>
                     <td>{{ value }}</td>
-                    <td><i class="fa-solid fa-pencil" onclick="console.log('clicked')"></i></td>
+                    <td><i class="fa-solid fa-pencil" onclick="editTask('task-table-{{ task.task_number }}');"></i></td>
                 </tr>
                 {% endfor %}
             </table>
@@ -81,6 +79,41 @@
             {% else %}
             <p>No tasks available for this incident.</p>
             {% endif %}
+
+            <form action="{{ url_for('update_task', incident_id=incident['_id']) }}" method="post" id="updateTask" class="hidden">
+                <button id="cancelUpdate" onclick="cancelUpdate(event);">Cancel</button>
+                <div>
+                    <label for="status">Status:</label>
+                    <select name="status" id="status">
+                        <option value="new">New</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="closed">Closed</option>
+                    </select><br>
+                </div>
+
+                <div>
+                    <label for="assigned to">Assigned To:</label>
+                    <input type="text" id="assigned to" name="assigned to"><br>
+                </div>
+
+
+                <div>
+                    <label for="priority">Priority:</label>
+                    <select name="priority" id="priority">
+                        <option value="urgent">Urgent</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select><br>
+                </div>
+                <div>
+                    <label for="task notes">Task Notes:</label>
+                    <textarea id="task notes" name="task notes"></textarea><br>
+                </div>
+
+                <input type="submit" value="Update Task" onclick="showTasks()">
+            </form>
+
 
 
             <!-- Existing incident details layout... -->
@@ -222,6 +255,55 @@
                         console.error('Error during URL scan:', error);
                         document.getElementById('urlscanResult').textContent = 'Error occurred during URL scan.';
                     });
+            }
+
+            function editTask(taskID) {
+                // Get the table element
+                var table = document.getElementById(taskID);
+
+                // Get the form element
+                var form = document.getElementById('updateTask');
+
+                // Iterate over the rows in the table 
+                for (var i = 1; i < table.rows.length; i++) {
+                    // Get the key and value from the table row
+                    var key = table.rows[i].cells[0].innerText.trim();
+                    var value = table.rows[i].cells[1].innerText.trim();
+
+                    console.log(key + ' ' + value)
+
+                    // Find the corresponding input/select element in the form
+                    var inputElement = form.querySelector('[name="' + key.toLowerCase() + '"]');
+
+                    // Update the value of the input/select element
+                    if (inputElement) {
+                        inputElement.value = value;
+                    }
+                }
+
+                toggleHidden()
+            }
+
+            function showTasks() {
+                // toggleHidden()
+            }
+
+            function toggleHidden() {
+                var taskTable = document.getElementById("task-table")
+                var updateTaskForm = document.getElementById("updateTask")
+
+                taskTable.classList.toggle("hidden")
+                updateTaskForm.classList.toggle("hidden")
+            }
+
+
+            function cancelUpdate(event) {
+                // Prevent the default button click behavior
+                event.preventDefault();
+
+                var form = document.getElementById('updateTask');
+                form.classList.toggle('hidden');
+                form.reset();
             }
 
         </script>

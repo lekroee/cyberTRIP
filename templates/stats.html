@@ -7,43 +7,70 @@
 <body>
 
     <button id="back_button" onclick="location.href='/dashboard'">Back To Dashboard</button>
-    <h1 id="subtitle"> TODO: Add stats </h1>
+    <h1 id="subtitle"> TODO: Make this look nicer</h1>
 
+    <h1>Incident Statistics</h1>
+    <div id="incidentStatistics">
 
-    <div class="chart-container" style="height: 200px;">
-        <canvas id="incidentTypeChart"></canvas>
+        <div class="chart-container" style="height: 200px;">
+            <canvas id="incidentTypeChart"></canvas>
+        </div>
+        <div class="chart-container" style="height: 200px;">
+            <canvas id="severityChart"></canvas>
+        </div>
+        <div class="chart-container" style="height: 200px;">
+            <canvas id="analystNameChart"></canvas>
+        </div>
+        <div class="chart-container" style="height: 200px;">
+            <canvas id="dateIncidentsChart"></canvas>
+        </div>
     </div>
-    <div class="chart-container" style="height: 200px;">
-        <canvas id="severityChart"></canvas>
+
+    <h1>Task Statistics</h1>
+    <div id="taskStatistics">
+        <div class="chart-container" style="height: 200px;">
+            <canvas id="statusChart"></canvas>
+        </div>
+        <div class="chart-container" style="height: 200px;">
+            <canvas id="assignedToChart"></canvas>
+        </div>
+        <div class="chart-container" style="height: 200px;">
+            <canvas id="priorityChart"></canvas>
+        </div>
+
     </div>
-    <div class="chart-container" style="height: 200px;">
-        <canvas id="analystNameChart"></canvas>
-    </div>
 
-
-
-
-
-
-
-
-
-
+    
+    <script src="https://cdn.jsdelivr.net/npm/moment@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@latest"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        //display charts when dom divs above loaded
         document.addEventListener('DOMContentLoaded', function () {
             fetch('/api/statistics')
                 .then(response => response.json())
                 .then(data => {
+                    // Creating charts for incident statistics
                     createChart('incidentTypeChart', 'Incident Types', data.incident_types);
                     createChart('severityChart', 'Severity', data.severity);
                     createChart('analystNameChart', 'Analyst Names', data.analyst_name);
-                    displayEmailsSent('emailsSentStatistic', data.emails_sent);
+
+                    createDateIncidentsChart('dateIncidentsChart', 'Incidents by Date', data.incidents_by_date);
+
+
+                    // Creating charts for task statistics
+                    createChart('statusChart', 'Task Status', data.task_stats.status);
+                    createChart('assignedToChart', 'Assigned To', data.task_stats.assigned_to);
+                    createChart('priorityChart', 'Task Priority', data.task_stats.priority);
+
+                    // Process and display priority per assigned_to data
+                    //processPriorityPerAssignedTo(data.task_stats.priority_per_assigned_to);
                 })
                 .catch(error => console.error('Error:', error));
         });
 
+        //Just default bar charts
         function createChart(canvasId, label, data) {
             const ctx = document.getElementById(canvasId).getContext('2d');
             const backgroundColors = data.map(() => `rgba(${getRandomInt(0, 255)}, ${getRandomInt(0, 255)}, ${getRandomInt(0, 255)}, 0.5)`);
@@ -61,7 +88,7 @@
                     }]
                 },
                 options: {
-                    maintainAspectRatio: false,  // Add this to control aspect ratio
+                    maintainAspectRatio: false,  // set this true to control ratio
                     scales: {
                         y: {
                             beginAtZero: true
@@ -70,7 +97,7 @@
                 }
             });
         }
-
+        //Change up the colors randomly
         function getRandomInt(min, max) {
             min = Math.ceil(min);
             max = Math.floor(max);
@@ -81,7 +108,42 @@
             const container = document.getElementById(elementId);
             container.innerHTML = `<h3>Total Emails Sent: ${totalEmailsSent}</h3>`;
         }
+
+        function createDateIncidentsChart(canvasId, label, data) {
+            // Filter out invalid date formats
+            const validData = data.filter(item => isValidDate(item._id));
+
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(item => item._id),
+                    datasets: [{
+                        label: label,
+                        data: data.map(item => item.count),
+                        backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                        borderColor: 'rgba(0, 123, 255, 1)',
+                        borderWidth: 1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'category'  // Use category instead of time
+                        },
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        function isValidDate(dateStr) {
+            return moment(dateStr, 'YYYY-MM-DD', true).isValid();
+        }
     </script>
+
 
 </body>
 </html>

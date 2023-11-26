@@ -81,7 +81,12 @@
             {% endif %}
 
             <form action="{{ url_for('update_task', incident_id=incident['_id']) }}" method="post" id="updateTask" class="hidden">
-                <button id="cancelUpdate" onclick="cancelUpdate(event);">Cancel</button>
+
+                <!-- This is hidden input for the task number -->
+                <input type="hidden" name="task_number" id="taskNumber">
+
+
+                <button id="cancelUpdate" onclick="(e) => cancelUpdate(e)">Cancel</button>
                 <div>
                     <label for="status">Status:</label>
                     <select name="status" id="status">
@@ -92,8 +97,8 @@
                 </div>
 
                 <div>
-                    <label for="assigned to">Assigned To:</label>
-                    <input type="text" id="assigned to" name="assigned to"><br>
+                    <label for="assigned_to">Assigned To:</label>
+                    <input type="text" id="assigned_to" name="assigned_to"><br>
                 </div>
 
 
@@ -107,8 +112,8 @@
                     </select><br>
                 </div>
                 <div>
-                    <label for="task notes">Task Notes:</label>
-                    <textarea id="task notes" name="task notes"></textarea><br>
+                    <label for="task_notes">Task Notes:</label>
+                    <textarea id="task_notes" name="task_notes"></textarea><br>
                 </div>
 
                 <input type="submit" value="Update Task" onclick="showTasks()">
@@ -264,16 +269,23 @@
                 // Get the form element
                 var form = document.getElementById('updateTask');
 
+                
+
                 // Iterate over the rows in the table 
                 for (var i = 1; i < table.rows.length; i++) {
                     // Get the key and value from the table row
                     var key = table.rows[i].cells[0].innerText.trim();
                     var value = table.rows[i].cells[1].innerText.trim();
 
+                    // Set the task number in the hidden input field
+                    document.getElementById('taskNumber').value = taskID.replace('task-table-', '');
+
+
                     console.log(key + ' ' + value)
 
-                    // Find the corresponding input/select element in the form
-                    var inputElement = form.querySelector('[name="' + key.toLowerCase() + '"]');
+
+                    // Find the corresponding input/select element in the form, replace whitespace with underscores for consistency 
+                    var inputElement = form.querySelector('[name="' + key.toLowerCase().replace(/\s+/g, '_') + '"]');
 
                     // Update the value of the input/select element
                     if (inputElement) {
@@ -281,25 +293,25 @@
                     }
                 }
 
-                toggleHidden()
+                toggleHidden(taskID)
             }
 
-            function showTasks() {
-                // toggleHidden()
+            function toggleHidden(taskID) {
+                var taskTable = document.getElementById(taskID);
+                var updateTaskForm = document.getElementById("updateTask");
+
+                // Check if elements exist before toggling class
+                if (taskTable) {
+                    taskTable.classList.toggle("hidden");
+                }
+                if (updateTaskForm) {
+                    updateTaskForm.classList.toggle("hidden");
+                }
             }
 
-            function toggleHidden() {
-                var taskTable = document.getElementById("task-table")
-                var updateTaskForm = document.getElementById("updateTask")
-
-                taskTable.classList.toggle("hidden")
-                updateTaskForm.classList.toggle("hidden")
-            }
-
-
-            function cancelUpdate(event) {
+            function cancelUpdate(e) {
                 // Prevent the default button click behavior
-                event.preventDefault();
+                e.preventDefault();
 
                 var form = document.getElementById('updateTask');
                 form.classList.toggle('hidden');

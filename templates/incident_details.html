@@ -85,8 +85,11 @@
                 <!-- This is hidden input for the task number -->
                 <input type="hidden" name="task_number" id="taskNumber">
 
+                <!-- must be of type button because default is submit type -->
+                <!-- Updated Cancel button without inline onclick, I changed to an event listener-->
+                <button type="button" id="cancelUpdate">Cancel</button>
 
-                <button id="cancelUpdate" onclick="(e) => cancelUpdate(e)">Cancel</button>
+
                 <div>
                     <label for="status">Status:</label>
                     <select name="status" id="status">
@@ -309,13 +312,23 @@
                 }
             }
 
-            function cancelUpdate(e) {
-                // Prevent the default button click behavior
-                e.preventDefault();
+            //This only exists because I can't get the onclick cancelupdate to work otherwise
+            document.addEventListener('DOMContentLoaded', function () {
+                // Event listener for the cancel button
+                var cancelButton = document.getElementById('cancelUpdate');
+                if (cancelButton) {
+                    cancelButton.addEventListener('click', cancelUpdate);
+                }
+                
+                
+            });
 
+            function cancelUpdate() {
                 var form = document.getElementById('updateTask');
-                form.classList.toggle('hidden');
-                form.reset();
+                if (form) {
+                    form.classList.toggle('hidden');
+                    form.reset();
+                }
             }
 
         </script>

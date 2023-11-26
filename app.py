@@ -273,6 +273,51 @@ def view_incidents():
 def view_stats():
     return render_template("stats.html")
 
+#Chris added this to view the stats
+@app.route('/api/statistics')
+def get_statistics():
+    incident_type_pipeline = [
+        {"$group": {
+            "_id": "$incident_type",
+            "count": {"$sum": 1}
+        }}
+    ]
+    incident_types = list(db.incidents.aggregate(incident_type_pipeline))
+
+    # Aggregation for severity
+    severity_pipeline = [
+        {"$group": {
+            "_id": "$severity",
+            "count": {"$sum": 1}
+        }}
+    ]
+    severity_data = list(db.incidents.aggregate(severity_pipeline))
+
+    # Aggregation for analyst_name
+    analyst_name_pipeline = [
+        {"$group": {
+            "_id": "$analyst_name",
+            "count": {"$sum": 1}
+        }}
+    ]
+    analyst_name_data = list(db.incidents.aggregate(analyst_name_pipeline))
+
+    # Assuming emails_sent is a numeric value; summing it up
+    emails_sent_pipeline = [
+        {"$group": {
+            "_id": None,  # Grouping all documents together
+            "total": {"$sum": "$emails_sent"}
+        }}
+    ]
+    emails_sent_data = list(db.incidents.aggregate(emails_sent_pipeline))
+
+    return jsonify({
+        "incident_types": incident_types,
+        "severity": severity_data,
+        "analyst_name": analyst_name_data,
+        "emails_sent": emails_sent_data[0]['total'] if emails_sent_data else 0
+    })
+
 
 # added to display homepage
 @app.route("/dashboard", methods=["GET"])

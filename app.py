@@ -276,6 +276,18 @@ def view_stats():
 #Chris added this to view the stats
 @app.route('/api/statistics')
 def get_statistics():
+    
+# Aggregation for incidents by date
+    date_pipeline = [
+        {"$group": {
+            "_id": "$date",  # Group directly by the date string
+            "count": {"$sum": 1}
+        }},
+        {"$sort": {"_id": 1}}  # Sort by date in ascending order
+    ]
+    incidents_by_date = list(db.incidents.aggregate(date_pipeline))    
+
+
     incident_type_pipeline = [
         {"$group": {
             "_id": "$incident_type",
@@ -302,7 +314,7 @@ def get_statistics():
     ]
     analyst_name_data = list(db.incidents.aggregate(analyst_name_pipeline))
 
-    # Assuming emails_sent is a numeric value; summing it up
+    # Assuming emails_sent is a numeric value; summing it up. I don't think this works correctly
     emails_sent_pipeline = [
         {"$group": {
             "_id": None,  # Grouping all documents together
@@ -311,11 +323,66 @@ def get_statistics():
     ]
     emails_sent_data = list(db.incidents.aggregate(emails_sent_pipeline))
 
+    ##############################TASK STATS
+
+    # Aggregation for task status
+    status_pipeline = [
+        {"$unwind": "$tasks"},
+        {"$group": {
+            "_id": "$tasks.status",
+            "count": {"$sum": 1}
+        }}
+    ]
+    status_data = list(db.incidents.aggregate(status_pipeline))
+
+    # Aggregation for Assigned_To
+    assigned_to_pipeline = [
+        {"$unwind": "$tasks"},
+        {"$group": {
+            "_id": "$tasks.assigned_to",
+            "count": {"$sum": 1}
+        }}
+    ]
+    assigned_to_data = list(db.incidents.aggregate(assigned_to_pipeline))
+
+    # Aggregation for Priority
+    priority_pipeline = [
+        {"$unwind": "$tasks"},
+        {"$group": {
+            "_id": "$tasks.priority",
+            "count": {"$sum": 1}
+        }}
+    ]
+    priority_data = list(db.incidents.aggregate(priority_pipeline))
+
+    # Aggregation for Priority per Assigned_To
+    priority_per_assigned_to_pipeline = [
+        {"$unwind": "$tasks"},
+        {"$group": {
+            "_id": {
+                "assigned_to": "$tasks.assigned_to",
+                "priority": "$tasks.priority"
+            },
+            "count": {"$sum": 1}
+        }}
+    ]
+    priority_per_assigned_to_data = list(db.incidents.aggregate(priority_per_assigned_to_pipeline))
+
+
+
+
     return jsonify({
         "incident_types": incident_types,
+        "incidents_by_date": incidents_by_date,
         "severity": severity_data,
         "analyst_name": analyst_name_data,
-        "emails_sent": emails_sent_data[0]['total'] if emails_sent_data else 0
+        "emails_sent": emails_sent_data[0]['total'] if emails_sent_data else 0,
+        "task_stats": {
+            "status": status_data,
+            "assigned_to": assigned_to_data,
+            "priority": priority_data,
+            "priority_per_assigned_to": priority_per_assigned_to_data
+        }
     })
 
 

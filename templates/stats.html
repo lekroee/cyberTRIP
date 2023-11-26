@@ -8,6 +8,80 @@
 
     <button id="back_button" onclick="location.href='/dashboard'">Back To Dashboard</button>
     <h1 id="subtitle"> TODO: Add stats </h1>
-    
+
+
+    <div class="chart-container" style="height: 200px;">
+        <canvas id="incidentTypeChart"></canvas>
+    </div>
+    <div class="chart-container" style="height: 200px;">
+        <canvas id="severityChart"></canvas>
+    </div>
+    <div class="chart-container" style="height: 200px;">
+        <canvas id="analystNameChart"></canvas>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            fetch('/api/statistics')
+                .then(response => response.json())
+                .then(data => {
+                    createChart('incidentTypeChart', 'Incident Types', data.incident_types);
+                    createChart('severityChart', 'Severity', data.severity);
+                    createChart('analystNameChart', 'Analyst Names', data.analyst_name);
+                    displayEmailsSent('emailsSentStatistic', data.emails_sent);
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        function createChart(canvasId, label, data) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            const backgroundColors = data.map(() => `rgba(${getRandomInt(0, 255)}, ${getRandomInt(0, 255)}, ${getRandomInt(0, 255)}, 0.5)`);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.map(item => item._id),
+                    datasets: [{
+                        label: label,
+                        data: data.map(item => item.count),
+                        backgroundColor: backgroundColors,
+                        borderColor: backgroundColors.map(color => color.replace('0.5', '1')),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,  // Add this to control aspect ratio
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function getRandomInt(min, max) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function displayEmailsSent(elementId, totalEmailsSent) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = `<h3>Total Emails Sent: ${totalEmailsSent}</h3>`;
+        }
+    </script>
+
 </body>
 </html>

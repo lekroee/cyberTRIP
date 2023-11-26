@@ -417,53 +417,36 @@ def add_task(incident_id):
     # Redirect to the incident details page or wherever appropriate
     return redirect(url_for('incident_details', incident_id=incident_id))
 
-# for updating a task to a specific incident id
 @app.route('/update-task/<incident_id>', methods=['POST'])
 @login_required
 def update_task(incident_id):
     try:
-        # Convert the incident_id from a string to an ObjectId
         obj_id = ObjectId(incident_id)
     except:
         return make_response("Invalid incident ID format", 400)
 
-    # Extract task details from the form
+    # Extract task details from the form, including the task number
+    task_number = int(request.form.get('task_number'))
     status = request.form.get('status')
     assigned_to = request.form.get('assigned_to')
     priority = request.form.get('priority')
     task_notes = request.form.get('task_notes')
 
-     # Find the incident to which the task will be added
-    incident = collection.find_one({'_id': obj_id}, {"tasks": 1})  # retrieve only the 'tasks' field
-
-    if not incident:
-        return make_response("Incident not found", 404)
-
-    # Calculate the new task number (length of current tasks + 1)
-    current_tasks = incident.get('tasks', [])
-    new_task_number = len(current_tasks) + 1
-
-    # Create the new task
-    new_task = {
-        "task_number": new_task_number,
-        "status": status,
-        "assigned_to": assigned_to,
-        "priority": priority,
-        "task_notes": task_notes,
-    }
-
-    # Add the new task to the incident's list of tasks
+    # Update the task within the incident's task list
     update_result = collection.update_one(
-        {'_id': obj_id},
-        {'$push': {'tasks': new_task}}
+        {'_id': obj_id, 'tasks.task_number': task_number},
+        {'$set': {
+            'tasks.$.status': status,
+            'tasks.$.assigned_to': assigned_to,
+            'tasks.$.priority': priority,
+            'tasks.$.task_notes': task_notes
+        }}
     )
 
     if update_result.modified_count == 0:
         return make_response("Incident not found or update failed", 404)
 
-    # Redirect to the incident details page or wherever appropriate
     return redirect(url_for('incident_details', incident_id=incident_id))
-
 
 
 #store data that's display on the bottom of the page in mongo database

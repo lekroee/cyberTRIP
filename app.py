@@ -193,7 +193,7 @@ def logout():
 
 
 @app.route("/create-user", methods=["GET", "POST"])
-@login_required
+# @login_required
 def create_user():
     # if session.get("user_type") != "superuser":
         # return "Access denied", 403
@@ -245,7 +245,7 @@ def create_user():
 # --------------------------- ADDED Oct. 18th ---------------------------
 # added to display homepage
 @app.route("/homepage", methods=["GET"])
-@login_required
+# @login_required
 def homepage():
     return render_template("homepage.html")
 
@@ -400,8 +400,7 @@ def dashboard():
 # EDITED Oct. 18th
 #for loading index, it displays any data in data list at the bottom when loaded
 @app.route("/")
-@login_required
-
+# @login_required
 def start():
     return render_template("homepage.html")
 

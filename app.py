@@ -128,6 +128,7 @@ app.json_encoder = JSONEncoder
 
 db = client["incident_db"]#database name that stores incidents
 users_collection = db["users"]#for login info users in database for incidents
+tickets_collection = db["tickets"]#for keeping track of ticket numbers
 
 
 
@@ -462,6 +463,7 @@ def submit_data():
 
         # Insert data directly into the MongoDB collection
         collection.insert_one(data)
+        tickets_collection.insert_one({"ticket_number" : new_ticket_number})
 
         # Manually serialize the data, including the ObjectId instances
         response_data = json_util.dumps(data)
